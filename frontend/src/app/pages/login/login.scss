@@ -1,0 +1,136 @@
+.login {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* Panel de marca con un mapa decorativo hecho solo con CSS */
+.marca {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 56px;
+  overflow: hidden;
+  color: var(--blanco);
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 48px),
+    radial-gradient(circle at 70% 30%, #14507a 0%, var(--azul-marino) 62%);
+}
+
+.mapa-decorativo {
+  position: absolute;
+  inset: 0;
+}
+
+.pin {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--blanco);
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.12);
+
+  &.pin-1 { top: 22%; left: 28%; background: #1565a6; }
+  &.pin-2 { top: 38%; left: 62%; background: #17845a; }
+  &.pin-3 { top: 56%; left: 40%; background: #d97706; }
+  &.pin-4 { top: 30%; left: 80%; background: #2bb673; }
+}
+
+.marca-texto {
+  position: relative;
+  max-width: 420px;
+
+  .empresa {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--verde-claro);
+  }
+  h2 {
+    font-size: 44px;
+    color: var(--blanco);
+  }
+  .lema {
+    margin: 12px 0 0;
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 400px;
+
+  header {
+    h1 {
+      font-size: 28px;
+    }
+    p {
+      margin: 6px 0 0;
+      color: var(--texto-suave);
+    }
+  }
+
+  .btn-primario {
+    padding: 12px 18px;
+    margin-top: 4px;
+  }
+}
+
+.con-boton {
+  position: relative;
+
+  input {
+    padding-right: 92px;
+  }
+  .ver {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--azul);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--fondo);
+    }
+    &:focus-visible {
+      outline: 3px solid rgba(21, 101, 166, 0.35);
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .marca {
+    min-height: 180px;
+    padding: 28px 24px;
+
+    .marca-texto h2 {
+      font-size: 32px;
+    }
+    .lema {
+      display: none;
+    }
+  }
+}
