@@ -151,3 +151,27 @@ gitGraph
 **Decisión:** los cuerpos de las peticiones y las variables de `.env` se validan con `zod`. Si falta o es inválida una variable, la API no arranca y dice cuál.
 
 **Por qué:** un esquema declarativo evita repetir `if` a mano y deja los tipos de TypeScript inferidos de la misma definición, sin `any`. Fallar al arrancar es mejor que descubrir una llave del JWT vacía cuando alguien intenta entrar.
+
+## D-14. Un administrador no puede quitarse el acceso a sí mismo
+
+**Fecha:** 2026-11-02
+
+**Decisión:** la API responde 400 si un administrador intenta desactivar su propia cuenta, quitarse el rol de administrador o eliminarse. El enunciado solo pide impedir lo último.
+
+**Por qué:** cualquiera de las tres acciones puede dejar al sistema sin ningún administrador, y entonces nadie podría gestionar usuarios sin entrar a la base de datos. Como siempre queda al menos quien hace la petición, nunca se llega a cero administradores.
+
+## D-15. Respuestas con objetos anidados y nombres en camelCase
+
+**Fecha:** 2026-11-02
+
+**Decisión:** la API devuelve `categoria` y `registradoPor` como objetos dentro del punto, y los nombres en camelCase (`creadoEn`, `categoriaId`) en lugar de los de la base (`creado_en`, `categoria_id`). Las coordenadas se convierten a número.
+
+**Por qué:** así encajan directo con las interfaces de TypeScript del frontend y no hay que pedir las categorías por separado para pintar cada punto. PostgreSQL devuelve las columnas `NUMERIC` como texto, y convertirlas en la API evita que el mapa reciba `"19.43"` en lugar de `19.43`.
+
+## D-16. Contraseña vacía al editar significa "no cambiar"
+
+**Fecha:** 2026-11-02
+
+**Decisión:** en la edición de un usuario, una contraseña vacía se trata igual que si no viniera.
+
+**Por qué:** el formulario del enunciado deja la contraseña opcional al editar y, al dejarla en blanco, el campo viaja como cadena vacía. Sin esta regla, el usuario recibiría un error de "mínimo 8 caracteres" aunque no quisiera cambiarla.

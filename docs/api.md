@@ -93,6 +93,64 @@ Content-Type: application/json
 }
 ```
 
+### Punto (respuesta)
+
+Los puntos siempre se devuelven con su categoría y quién los registró, así el frontend no necesita pedir nada más:
+
+```json
+{
+  "id": 1,
+  "nombre": "Oficina Centro",
+  "descripcion": "Oficina principal en el centro de la ciudad",
+  "latitud": 19.432608,
+  "longitud": -99.133209,
+  "categoria": { "id": 1, "nombre": "Oficina", "color": "#1565A6" },
+  "registradoPor": { "id": 1, "nombre": "Ana López" },
+  "creadoEn": "2026-11-02T23:20:05.483Z",
+  "actualizadoEn": "2026-11-02T23:20:05.483Z"
+}
+```
+
+Filtros del listado (se pueden combinar):
+
+| Parámetro | Efecto |
+|---|---|
+| `?categoriaId=2` | Solo los puntos de esa categoría |
+| `?q=almac` | Nombre que contenga el texto, sin distinguir mayúsculas |
+
+Reglas al crear o editar un punto:
+- `nombre` de 3 a 100 caracteres, `latitud` entre -90 y 90, `longitud` entre -180 y 180, y `categoriaId` de una categoría que exista (si no, 400).
+- `latitud` y `longitud` deben llegar como números, no como texto.
+- `descripcion` es opcional; vacía se guarda como `null`.
+- El dueño siempre es el usuario del token. Si el cuerpo trae `usuarioId`, se ignora.
+- `PUT` reemplaza los datos del punto, por lo que se envían todos los campos.
+
+### Usuario (respuesta)
+
+Nunca incluye la contraseña ni su hash. Añade `totalPuntos`, que sirve para avisar en la confirmación cuántos puntos se eliminarán junto con el usuario:
+
+```json
+{
+  "id": 3,
+  "nombre": "María Torres",
+  "correo": "usuario2@geopuntos.com",
+  "rol": "USUARIO",
+  "activo": true,
+  "totalPuntos": 3,
+  "creadoEn": "2026-11-02T23:20:05.483Z",
+  "actualizadoEn": "2026-11-02T23:20:05.483Z"
+}
+```
+
+Filtros del listado: `?q=` busca en nombre o correo y `?rol=ADMIN` o `?rol=USUARIO` filtra por rol.
+
+Reglas al crear o editar un usuario:
+- `nombre` de 2 a 100 caracteres, `correo` válido y de máximo 120, `contraseña` de 8 a 72 caracteres y `rol` ADMIN o USUARIO.
+- El correo se guarda en minúsculas y sin espacios en los extremos. Si ya existe, responde 409.
+- Al editar todos los campos son opcionales. Una contraseña vacía o ausente no la cambia.
+- Un administrador no puede desactivarse, quitarse el rol de administrador ni eliminarse a sí mismo (400).
+- Al eliminar un usuario se eliminan también sus puntos.
+
 ### Error de validación
 
 ```json
