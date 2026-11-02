@@ -86,6 +86,37 @@ El interceptor aplica a cada petición:
 - Si la API rechaza las credenciales, o la cuenta está inactiva, se muestra el mensaje en rojo.
 - Panel de marca a la izquierda con un mapa decorativo hecho solo con CSS. En pantallas estrechas se apila sobre el formulario.
 
+## Pantalla del mapa (`/mapa`)
+
+A la izquierda, un panel con buscador por nombre, filtro por categoría, contador y una tarjeta por punto. A la derecha, el mapa de OpenLayers.
+
+| Elemento | Detalle |
+|---|---|
+| Capa base | OpenStreetMap (raster) |
+| Capa de puntos | Vectorial; cada punto se pinta con el color de su categoría mediante una función de estilo |
+| Punto elegido | Más grande, con borde blanco grueso y un halo azul |
+| Controles | Zoom, barra de escala (`ScaleLine`) y leyenda de categorías |
+| Ventana de información | `Overlay` con nombre, categoría, descripción, coordenadas y quién lo registró |
+
+**Lista y mapa conectados (RF-09).** Elegir una tarjeta centra el mapa con animación, hace zoom (sin alejar si ya estabas más cerca), resalta el punto y abre su ventana. Hacer clic en un punto del mapa hace lo mismo en sentido contrario y marca su tarjeta. La búsqueda y el filtro por categoría actúan sobre la lista y el mapa a la vez, porque ambos leen la misma señal `filtrados`.
+
+```mermaid
+flowchart LR
+    API[API: puntos y categorías] --> S[señales: puntos y categorías]
+    S --> F[computed: filtrados]
+    B[Búsqueda] --> F
+    C[Filtro de categoría] --> F
+    F --> L[Lista de tarjetas]
+    F --> M[Capa de puntos del mapa]
+    E[Punto elegido] --> L
+    E --> M
+    E --> V[Ventana de información]
+```
+
+**Ciclo de vida del mapa.** Se crea en `ngAfterViewInit`, cuando ya existe el contenedor en la página, y se libera en `ngOnDestroy` (`setTarget(undefined)`) al salir de la pantalla. La primera vez que llegan los datos, la vista se ajusta para que se vean todos los puntos.
+
+La pantalla muestra un estado de carga, un mensaje de error con botón "Reintentar" si la API falla, y "No hay puntos con esos filtros" cuando no hay resultados.
+
 ## Cómo correrlo
 
 ```bash
