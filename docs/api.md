@@ -1,6 +1,6 @@
 # API REST
 
-Base: `http://localhost:3000/api`. Todas las respuestas son JSON, salvo las que devuelven 204 (sin contenido).
+Base: `http://localhost:3001/api` (el puerto se cambia con `PORT` en `.env`). Todas las respuestas son JSON, salvo las que devuelven 204 (sin contenido).
 
 ## Autenticación
 
@@ -17,6 +17,8 @@ Sin token, o con un token vencido o inválido, la API responde 401.
 | Método | Ruta | Acceso | Qué hace | Respuestas |
 |---|---|---|---|---|
 | POST | `/api/auth/login` | Público | Valida correo y contraseña. Devuelve el token y los datos del usuario | 200, 400, 401 |
+| GET | `/api/auth/perfil` | Con sesión | Datos del usuario de la sesión. El frontend lo usa al recargar la página | 200, 401 |
+| GET | `/api/salud` | Público | Comprueba que la API responde | 200 |
 | GET | `/api/categorias` | Con sesión | Lista las categorías con su color | 200 |
 | GET | `/api/puntos` | Con sesión | Todos los puntos con categoría y usuario. Filtros `?categoriaId=` y `?q=` | 200 |
 | GET | `/api/puntos/:id` | Con sesión | Un punto | 200, 404 |
@@ -60,6 +62,21 @@ Content-Type: application/json
 }
 ```
 
+### Respuestas de autenticación
+
+| Situación | Código | Cuerpo |
+|---|:---:|---|
+| Correo o contraseña incorrectos, o correo inexistente | 401 | `{ "mensaje": "Correo o contraseña incorrectos" }` |
+| Contraseña correcta pero cuenta inactiva | 401 | `{ "mensaje": "Tu cuenta está inactiva. Contacta a un administrador" }` |
+| Faltan campos o el correo no es válido | 400 | `{ "errores": [ ... ] }` |
+| Sin token | 401 | `{ "mensaje": "Se requiere iniciar sesión" }` |
+| Token inválido | 401 | `{ "mensaje": "Token inválido" }` |
+| Token vencido | 401 | `{ "mensaje": "La sesión expiró, inicia sesión de nuevo" }` |
+| Usuario eliminado o desactivado con un token vigente | 401 | `{ "mensaje": "La sesión ya no es válida" }` |
+| Rol insuficiente | 403 | `{ "mensaje": "No tienes permiso para esta acción" }` |
+
+El mensaje de cuenta inactiva solo se muestra cuando la contraseña es correcta. Así nadie puede averiguar qué cuentas existen probando contraseñas al azar.
+
 ### Crear un punto
 
 ```http
@@ -90,7 +107,7 @@ Content-Type: application/json
 
 ## Reglas generales
 
-- El middleware de autenticación revisa el token en todas las rutas, excepto el login.
+- El middleware de autenticación revisa el token en todas las rutas, excepto el login y `/api/salud`. Además consulta al usuario en la base en cada petición (ver D-10).
 - El middleware de rol bloquea `/api/usuarios` con 403 si el usuario no es administrador.
 - Un usuario inactivo no puede iniciar sesión.
 - La API nunca devuelve `password_hash`.
@@ -109,3 +126,15 @@ flowchart LR
 ```
 
 Las rutas reciben la petición, los middlewares la validan, los controladores responden y los servicios hablan con la base de datos.
+
+Carpetas dentro de `backend/src`:
+
+| Carpeta | Contenido |
+|---|---|
+| `config/` | Variables de entorno validadas y conexión a PostgreSQL |
+| `routes/` | Definición de rutas |
+| `controllers/` | Reciben la petición, validan el cuerpo y responden |
+| `services/` | Consultas SQL y reglas de negocio |
+| `middlewares/` | `autenticar`, `requiereRol` y manejo de errores |
+| `types/` | Interfaces `Usuario`, `Categoria`, `Punto` y `SesionUsuario` |
+| `utils/` | Utilidades compartidas, como la validación con zod |

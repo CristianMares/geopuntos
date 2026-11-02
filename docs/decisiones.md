@@ -102,3 +102,52 @@ gitGraph
 - Activar SSL en la conexión a Neon.
 
 **Estado:** pendiente. Se hace al final y solo cuenta como punto extra.
+
+## D-09. bcryptjs en lugar de bcrypt
+
+**Fecha:** 2026-11-02
+
+**Decisión:** las contraseñas se cifran con `bcryptjs`, la implementación de bcrypt escrita en JavaScript.
+
+**Por qué:** el paquete `bcrypt` incluye código nativo que a veces falla al instalar según el sistema o la versión de Node, y también al desplegar. `bcryptjs` produce el mismo formato de hash, así que un hash generado con uno lo verifica el otro. Es algo más lento, algo que aquí no importa.
+
+**Alternativa descartada:** `bcrypt` nativo. Es más rápido, pero añade el riesgo de que el proyecto no instale en otra máquina.
+
+## D-10. La autenticación consulta al usuario en cada petición
+
+**Fecha:** 2026-11-02
+
+**Decisión:** además de verificar la firma del token, el middleware `autenticar` busca al usuario en la base. El rol que se usa es el de la base de datos, no el que viaja dentro del token.
+
+**Por qué:** un JWT es válido hasta que vence. Sin esta consulta, un usuario desactivado o eliminado seguiría entrando hasta 8 horas, y uno al que le quitan el rol de administrador conservaría sus permisos. Con la consulta, el cambio aplica en la siguiente petición.
+
+**Costo:** una consulta por llave primaria en cada petición. Para este volumen es despreciable.
+
+**Alternativa descartada:** confiar solo en el token. Es más rápido, pero deja esos huecos de seguridad.
+
+## D-11. Mensajes del login que no revelan información
+
+**Fecha:** 2026-11-02
+
+**Decisión:**
+- Correo inexistente y contraseña incorrecta dan el mismo mensaje y el mismo código (401).
+- El aviso de cuenta inactiva solo aparece si la contraseña es correcta.
+- Si el correo no existe, igualmente se compara la contraseña contra un hash de relleno.
+
+**Por qué:** los mensajes distintos y las diferencias de tiempo permiten averiguar qué correos están registrados y cuáles cuentas están inactivas. El enunciado pide un mensaje para un usuario inactivo, y así se cumple sin filtrar datos a quien no conoce la contraseña.
+
+## D-12. Puertos locales: API en 3001 y base en 5433
+
+**Fecha:** 2026-11-02
+
+**Decisión:** la API usa el puerto 3001 y el contenedor de PostgreSQL se publica en el 5433. Ambos se cambian en `.env`.
+
+**Por qué:** en el entorno de desarrollo el 3000 ya lo usaba otra aplicación y el 5432 lo ocupaba un PostgreSQL instalado en Windows. En ese caso la API se conectaba al servidor equivocado y fallaba con un error de contraseña, difícil de diagnosticar. Dentro del contenedor la base sigue en el 5432; solo cambia el puerto publicado.
+
+## D-13. Validación con zod y variables de entorno comprobadas al arrancar
+
+**Fecha:** 2026-11-02
+
+**Decisión:** los cuerpos de las peticiones y las variables de `.env` se validan con `zod`. Si falta o es inválida una variable, la API no arranca y dice cuál.
+
+**Por qué:** un esquema declarativo evita repetir `if` a mano y deja los tipos de TypeScript inferidos de la misma definición, sin `any`. Fallar al arrancar es mejor que descubrir una llave del JWT vacía cuando alguien intenta entrar.

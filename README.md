@@ -48,6 +48,8 @@ Requiere Docker Desktop abierto.
    docker compose up -d
    ```
 
+La base se publica en el puerto **5433** de tu máquina (dentro del contenedor sigue siendo el 5432). Así no choca con un PostgreSQL instalado localmente. Se cambia con `DB_PORT` en `.env`.
+
 ### Usuarios de prueba
 
 | Correo | Contraseña | Rol |
@@ -55,6 +57,35 @@ Requiere Docker Desktop abierto.
 | `admin@geopuntos.com` | `Admin12345` | Administrador |
 | `usuario1@geopuntos.com` | `Usuario12345` | Usuario |
 | `usuario2@geopuntos.com` | `Usuario12345` | Usuario |
+
+## API
+
+Requiere Node.js 22 o superior y la base de datos corriendo.
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+La API queda en `http://localhost:3001/api`. Las variables salen del `.env` de la raíz del repositorio.
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Arranca la API y la reinicia al guardar cambios |
+| `npm run typecheck` | Revisa los tipos sin generar archivos |
+| `npm run build` | Compila a `dist/` |
+| `npm start` | Ejecuta la versión compilada |
+
+Para comprobar que responde:
+
+```bash
+curl http://localhost:3001/api/salud
+```
+
+```bash
+curl -X POST http://localhost:3001/api/auth/login -H "Content-Type: application/json" -d '{"correo":"admin@geopuntos.com","password":"Admin12345"}'
+```
 
 ## Flujo de trabajo
 
