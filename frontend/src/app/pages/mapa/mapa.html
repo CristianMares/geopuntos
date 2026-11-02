@@ -1,0 +1,92 @@
+<div class="pagina">
+  <aside class="panel">
+    <header class="cabecera">
+      <h1>Puntos <span class="contador">{{ filtrados().length }}</span></h1>
+      <input
+        #buscador
+        type="search"
+        placeholder="Buscar por nombre"
+        aria-label="Buscar por nombre"
+        [value]="busqueda()"
+        (input)="busqueda.set(buscador.value)"
+      />
+      <select
+        #selector
+        aria-label="Filtrar por categoría"
+        (change)="alCambiarCategoria(selector.value)"
+      >
+        <option value="">Todas las categorías</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+    </header>
+
+    <div class="lista">
+      @if (cargando()) {
+        <p class="estado">Cargando puntos...</p>
+      } @else if (error(); as mensaje) {
+        <div class="alerta-error" role="alert">{{ mensaje }}</div>
+        <button type="button" class="btn btn-secundario" (click)="cargar()">Reintentar</button>
+      } @else {
+        @for (punto of filtrados(); track punto.id) {
+          <button
+            type="button"
+            class="tarjeta"
+            [class.activa]="punto.id === seleccionadoId()"
+            [attr.aria-pressed]="punto.id === seleccionadoId()"
+            (click)="elegir(punto)"
+          >
+            <span class="color" [style.background]="punto.categoria.color"></span>
+            <span class="texto">
+              <strong>{{ punto.nombre }}</strong>
+              <small>{{ punto.categoria.nombre }}</small>
+              <small class="coordenadas">
+                {{ punto.latitud.toFixed(5) }}, {{ punto.longitud.toFixed(5) }}
+              </small>
+            </span>
+          </button>
+        } @empty {
+          <p class="estado">No hay puntos con esos filtros.</p>
+        }
+      }
+    </div>
+  </aside>
+
+  <section class="zona-mapa">
+    <div #contenedor class="mapa"></div>
+
+    <div class="leyenda" role="group" aria-label="Leyenda de categorías">
+      <strong>Categorías</strong>
+      @for (categoria of categorias(); track categoria.id) {
+        <span class="item">
+          <span class="color" [style.background]="categoria.color"></span>
+          {{ categoria.nombre }}
+        </span>
+      }
+    </div>
+
+    <!-- OpenLayers mueve este elemento sobre el mapa y lo coloca en el punto elegido -->
+    <div #ventana class="ventana">
+      @if (seleccionado(); as punto) {
+        <button type="button" class="cerrar" aria-label="Cerrar" (click)="cerrarVentana()">×</button>
+        <strong class="titulo">{{ punto.nombre }}</strong>
+        <span class="categoria">
+          <span class="color" [style.background]="punto.categoria.color"></span>
+          {{ punto.categoria.nombre }}
+        </span>
+        @if (punto.descripcion) {
+          <p class="descripcion">{{ punto.descripcion }}</p>
+        }
+        <dl>
+          <dt>Latitud</dt>
+          <dd>{{ punto.latitud.toFixed(6) }}</dd>
+          <dt>Longitud</dt>
+          <dd>{{ punto.longitud.toFixed(6) }}</dd>
+          <dt>Registró</dt>
+          <dd>{{ punto.registradoPor.nombre }}</dd>
+        </dl>
+      }
+    </div>
+  </section>
+</div>
