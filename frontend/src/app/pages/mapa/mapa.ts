@@ -38,6 +38,7 @@ const ZOOM_AL_ELEGIR = 15;
 export class Mapa implements OnInit, AfterViewInit, OnDestroy {
   private readonly puntosService = inject(PuntosService);
   private readonly categoriasService = inject(CategoriasService);
+  private readonly anfitrion = inject<ElementRef<HTMLElement>>(ElementRef);
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLDivElement>>('contenedor');
   private readonly ventana = viewChild.required<ElementRef<HTMLDivElement>>('ventana');
@@ -108,6 +109,7 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
       });
       const punto = feature?.get('punto') as Punto | undefined;
       this.seleccionadoId.set(punto?.id ?? null);
+      if (punto) this.mostrarTarjetaActiva();
     });
 
     this.mapa.on('pointermove', (evento) => {
@@ -157,6 +159,16 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
       center: fromLonLat([punto.longitud, punto.latitud]),
       zoom: Math.max(vista.getZoom() ?? 0, ZOOM_AL_ELEGIR),
       duration: 600,
+    });
+  }
+
+  /** Si el punto se eligió en el mapa, desplaza la lista hasta su tarjeta */
+  private mostrarTarjetaActiva(): void {
+    // Espera a que Angular pinte la clase "activa" antes de buscar la tarjeta
+    setTimeout(() => {
+      this.anfitrion.nativeElement
+        .querySelector('.tarjeta.activa')
+        ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
   }
 
