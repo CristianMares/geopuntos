@@ -119,7 +119,7 @@ La API ya impide que un administrador se elimine a sí mismo, y la interfaz avis
 - 4 categorías: Oficina `#1565A6`, Almacén `#17845A`, Cliente `#0B3954` y Punto de interés `#D97706`.
 - Al menos 6 puntos de ejemplo.
 
-Los usuarios de prueba se listan en el README.
+El detalle de cada registro y los usuarios de prueba están en [datos-semilla.md](datos-semilla.md).
 
 ## Consulta principal
 
