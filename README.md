@@ -23,6 +23,7 @@ TypeScript, Angular, OpenLayers, Node.js con Express, PostgreSQL y Docker.
 | [Base de datos](docs/base-de-datos.md) | Diagrama entidad-relación, tablas, reglas e índices |
 | [Datos semilla](docs/datos-semilla.md) | Usuarios, categorías y puntos de ejemplo |
 | [API](docs/api.md) | Endpoints, códigos HTTP y ejemplos |
+| [Frontend](docs/frontend.md) | Estructura de Angular, rutas, guards y flujo de la sesión |
 | [Decisiones](docs/decisiones.md) | Cambios respecto al enunciado y el motivo de cada uno |
 
 ## Base de datos
@@ -86,6 +87,18 @@ curl http://localhost:3001/api/salud
 ```bash
 curl -X POST http://localhost:3001/api/auth/login -H "Content-Type: application/json" -d '{"correo":"admin@geopuntos.com","password":"Admin12345"}'
 ```
+
+## Frontend
+
+Requiere la API corriendo en el puerto 3001.
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+La aplicación queda en `http://localhost:4200`. Más detalle en [frontend](docs/frontend.md).
 
 ## Flujo de trabajo
 

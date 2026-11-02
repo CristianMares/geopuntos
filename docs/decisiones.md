@@ -175,3 +175,31 @@ gitGraph
 **Decisión:** en la edición de un usuario, una contraseña vacía se trata igual que si no viniera.
 
 **Por qué:** el formulario del enunciado deja la contraseña opcional al editar y, al dejarla en blanco, el campo viaja como cadena vacía. Sin esta regla, el usuario recibiría un error de "mínimo 8 caracteres" aunque no quisiera cambiarla.
+
+## D-17. Angular 21 en lugar de la última versión
+
+**Fecha:** 2026-11-02
+
+**Decisión:** el frontend usa Angular 21.
+
+**Por qué:** la versión más reciente del CLI (22) exige Node 22.22.3 o superior y el equipo de desarrollo tiene Node 22.19. Angular 21 funciona con esa versión y trae todo lo que pide el enunciado: componentes standalone, signals, `@if` / `@for` y una aplicación sin zone.js.
+
+**Alternativa descartada:** actualizar Node. Habría obligado a quien revise el proyecto a tener una versión muy reciente para poder correrlo.
+
+## D-18. Sesión en localStorage, validada contra la API al abrir
+
+**Fecha:** 2026-11-02
+
+**Decisión:** el token y los datos básicos del usuario se guardan en `localStorage`. Al abrir o recargar la app se consulta `/api/auth/perfil` para comprobar que el token sigue siendo válido y refrescar el rol.
+
+**Por qué:** el enunciado pide que el token se guarde y que la sesión no se pierda al recargar. Validarlo contra la API evita mostrar pantallas de alguien a quien ya desactivaron o eliminaron. Si el almacenamiento no está disponible (modo privado, bloqueado), la app sigue funcionando y la sesión dura mientras la pestaña esté abierta.
+
+**Alternativa descartada:** una cookie `HttpOnly`, que protege mejor frente a XSS, pero exige cambiar la API para emitirla y configurar CORS con credenciales. Queda como mejora posible.
+
+## D-19. El interceptor envía el token solo a la API
+
+**Fecha:** 2026-11-02
+
+**Decisión:** `authInterceptor` agrega el encabezado `Authorization` únicamente si la URL empieza con `environment.apiUrl`.
+
+**Por qué:** si más adelante la aplicación hace peticiones a un servicio de terceros, el token no debe viajar con ellas.
