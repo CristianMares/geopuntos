@@ -1,0 +1,78 @@
+<main class="login">
+  <section class="marca" aria-hidden="true">
+    <div class="mapa-decorativo">
+      <span class="pin pin-1"></span>
+      <span class="pin pin-2"></span>
+      <span class="pin pin-3"></span>
+      <span class="pin pin-4"></span>
+    </div>
+    <div class="marca-texto">
+      <p class="empresa">ITSMARTS GEO</p>
+      <h2>GeoPuntos</h2>
+      <p class="lema">Registra y consulta tus puntos geográficos en un solo mapa.</p>
+    </div>
+  </section>
+
+  <section class="acceso">
+    <form class="tarjeta" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      <header>
+        <h1>Iniciar sesión</h1>
+        <p>Ingresa con tu correo y contraseña</p>
+      </header>
+
+      @if (error(); as mensaje) {
+        <div class="alerta-error" role="alert">{{ mensaje }}</div>
+      }
+
+      <div class="campo">
+        <label for="correo">Correo</label>
+        <input
+          id="correo"
+          type="email"
+          formControlName="correo"
+          autocomplete="username"
+          placeholder="nombre@empresa.com"
+          [class.invalido]="correo.invalid && correo.touched"
+        />
+        @if (correo.touched && correo.hasError('required')) {
+          <span class="error">El correo es obligatorio</span>
+        } @else if (correo.touched && correo.hasError('email')) {
+          <span class="error">El correo no es válido</span>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="password">Contraseña</label>
+        <div class="con-boton">
+          <input
+            id="password"
+            formControlName="password"
+            autocomplete="current-password"
+            [type]="verPassword() ? 'text' : 'password'"
+            [class.invalido]="password.invalid && password.touched"
+          />
+          <button
+            type="button"
+            class="ver"
+            (click)="alternarPassword()"
+            [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-pressed]="verPassword()"
+          >
+            {{ verPassword() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        @if (password.touched && password.hasError('required')) {
+          <span class="error">La contraseña es obligatoria</span>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primario" [disabled]="formulario.invalid || cargando()">
+        @if (cargando()) {
+          Entrando...
+        } @else {
+          Entrar
+        }
+      </button>
+    </form>
+  </section>
+</main>
