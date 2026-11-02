@@ -203,3 +203,19 @@ gitGraph
 **Decisión:** `authInterceptor` agrega el encabezado `Authorization` únicamente si la URL empieza con `environment.apiUrl`.
 
 **Por qué:** si más adelante la aplicación hace peticiones a un servicio de terceros, el token no debe viajar con ellas.
+
+## D-20. Búsqueda y filtro en el cliente en la pantalla del mapa
+
+**Fecha:** 2026-11-02
+
+**Decisión:** el mapa pide todos los puntos una sola vez y filtra en el navegador con un `computed`. La API también admite `?q=` y `?categoriaId=`, y esos filtros se dejan para el listado de la pantalla Puntos.
+
+**Por qué:** la lista y el mapa deben reaccionar a la vez a cada tecla, y filtrar en memoria es instantáneo y evita una petición por cada letra. Con cientos de puntos sigue siendo inmediato. Con miles habría que filtrar en el servidor.
+
+## D-21. OpenLayers sin envoltorios, con el ciclo de vida de Angular
+
+**Fecha:** 2026-11-02
+
+**Decisión:** el mapa se maneja directamente con la API de OpenLayers (sin una librería que lo envuelva para Angular). Se crea en `ngAfterViewInit` y se libera en `ngOnDestroy`. Los datos viven en signals, y un `effect` sincroniza la capa de puntos y la ventana cuando cambian los filtros o la selección.
+
+**Por qué:** el enunciado pide aplicar OpenLayers directamente, y así queda claro quién crea y destruye cada pieza. Sin liberar el mapa al salir, quedarían escuchadores y el contenedor colgados cada vez que se visita la pantalla.
