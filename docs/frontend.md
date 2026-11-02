@@ -22,12 +22,21 @@ frontend/src/
 | Ruta | Guard | Qué pasa |
 |---|---|---|
 | `/login` | `sinSesionGuard` | Si ya hay sesión, redirige a `/mapa` |
-| `/mapa` | `authGuard` | Sin sesión, redirige a `/login` |
+| `/mapa` y `/puntos` | `authGuard` (en la ruta padre) | Sin sesión, redirige a `/login` |
+| `/usuarios` | `authGuard` y `adminGuard` | Un usuario normal que la escriba es enviado a `/mapa` |
 | `/` y cualquier ruta desconocida | | Van a `/mapa`; si no hay sesión, el guard las manda a `/login` |
+
+`/mapa`, `/puntos` y `/usuarios` son rutas hijas de una ruta padre sin ruta propia que carga el componente `Shell`. Así el guard de sesión se declara una sola vez y todas comparten el menú lateral.
 
 Las pantallas se cargan de forma diferida (`loadComponent`), así que el código de cada una se descarga solo cuando se visita.
 
-`adminGuard` queda listo para la ruta `/usuarios`: un usuario normal que la escriba es enviado a `/mapa`.
+## Marco con menú lateral (`Shell`)
+
+- Menú fijo a la izquierda con Mapa, Puntos y Usuarios. **Usuarios solo aparece para administradores** (`@if (auth.esAdmin())`), y además la ruta está protegida por `adminGuard`, porque ocultar un enlace no basta.
+- Abajo muestra a quien tiene la sesión (iniciales, nombre y rol) y el botón "Cerrar sesión".
+- La opción activa se resalta con `routerLinkActive`.
+- En pantallas estrechas el menú pasa arriba, en una sola franja.
+- Por ahora `/puntos` y `/usuarios` muestran una pantalla provisional ("Próximamente") hasta que se construyan.
 
 ## Flujo de la sesión
 

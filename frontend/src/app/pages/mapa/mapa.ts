@@ -1,37 +1,22 @@
-import { Component, inject } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
+import { Component } from '@angular/core';
 
-/** Pantalla provisional: confirma que la sesión funciona. El mapa real llega en el siguiente bloque. */
+/** Pantalla provisional: el mapa con OpenLayers llega en el siguiente bloque. */
 @Component({
   selector: 'app-mapa',
   template: `
-    <main class="provisional">
-      <h1>Sesión iniciada</h1>
-      <p>
-        {{ auth.usuario()?.nombre }} ({{ auth.usuario()?.rol }}). El mapa se construye en el
-        siguiente bloque.
-      </p>
-      <button type="button" class="btn btn-secundario" (click)="auth.cerrarSesion()">
-        Cerrar sesión
-      </button>
-    </main>
+    <section class="provisional">
+      <h1>Mapa</h1>
+      <p>El mapa con los puntos se construye en el siguiente bloque.</p>
+    </section>
   `,
   styles: `
     .provisional {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      max-width: 520px;
-      margin: 80px auto;
-      padding: 0 24px;
+      padding: 32px;
     }
     p {
-      margin: 0;
+      margin: 8px 0 0;
       color: var(--texto-suave);
     }
   `,
 })
-export class Mapa {
-  protected readonly auth = inject(AuthService);
-}
+export class Mapa {}
