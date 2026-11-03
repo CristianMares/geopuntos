@@ -219,3 +219,23 @@ gitGraph
 **Decisión:** el mapa se maneja directamente con la API de OpenLayers (sin una librería que lo envuelva para Angular). Se crea en `ngAfterViewInit` y se libera en `ngOnDestroy`. Los datos viven en signals, y un `effect` sincroniza la capa de puntos y la ventana cuando cambian los filtros o la selección.
 
 **Por qué:** el enunciado pide aplicar OpenLayers directamente, y así queda claro quién crea y destruye cada pieza. Sin liberar el mapa al salir, quedarían escuchadores y el contenedor colgados cada vez que se visita la pantalla.
+
+## D-22. Capa satelital de Esri y selector de capas con ol-ext
+
+**Fecha:** 2026-11-03
+
+**Decisión:** además de OpenStreetMap, el mapa ofrece una capa satelital con las imágenes de Esri (`World_Imagery`). El cambio entre "Calles" y "Satélite" se hace con el `LayerSwitcher` de `ol-ext`, como sugiere el enunciado como punto extra. Las capas de puntos y de ubicación se excluyen del selector.
+
+**Por qué:** las imágenes de Esri no necesitan llave ni cuenta y permiten un uso ligero a cambio de mostrar su atribución, que aparece en la esquina del mapa. Para una demo es suficiente. En producción habría que revisar sus condiciones de uso o contratar un proveedor.
+
+**Detalle técnico:** `ol-ext` no trae tipos de TypeScript, así que se declara solo lo que se usa en `src/types/ol-ext.d.ts`, sin `any`.
+
+## D-23. Ubicación del usuario con la API del navegador
+
+**Fecha:** 2026-11-03
+
+**Decisión:** el botón "Ir a mi ubicación" usa `navigator.geolocation`. El navegador pregunta al usuario si lo permite; si acepta, el mapa vuela hasta ahí y marca un punto con su círculo de precisión. Si rechaza el permiso, la posición no está disponible o se agota el tiempo (10 s), se muestra un aviso con el motivo.
+
+**Por qué:** es la forma estándar y no necesita ningún servicio externo. La ubicación solo se usa para dibujar la marca en el mapa: no se guarda ni se envía a la API.
+
+**Limitación:** el navegador solo permite la geolocalización en páginas seguras (HTTPS o `localhost`). Al desplegar, el frontend debe servirse por HTTPS.
