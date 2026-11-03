@@ -265,3 +265,31 @@ gitGraph
 **Decisión:** al hacer clic en el mapa del formulario, la latitud y la longitud se redondean a 6 decimales y la longitud se normaliza al rango de -180 a 180.
 
 **Por qué:** la columna de la base de datos es `NUMERIC(9,6)`, así que más decimales no se conservarían. Si el mapa se arrastra más allá del antimeridiano, OpenLayers devuelve longitudes como 190 o -250, y la API las rechazaría por estar fuera de rango. Normalizarlas evita un error sin sentido para quien solo hizo clic.
+
+## D-27. Fechas con zona horaria (`TIMESTAMPTZ`)
+
+**Fecha:** 2026-11-03
+
+**Problema:** un punto creado a las 9:38 a.m. en la Ciudad de México aparecía como creado a las 3:38 p.m., seis horas después. Pasaba con todas las fechas: puntos y usuarios, en la tabla y en cualquier otro lugar que las muestre.
+
+**Causa:** tres detalles que juntos producían el error.
+1. Las columnas eran `TIMESTAMP` (sin zona horaria), como sugiere el enunciado. Guardan el reloj, pero no a qué zona pertenece.
+2. El contenedor de PostgreSQL trabaja en UTC, así que `NOW()` escribía `15:38:29`, que es la hora de Greenwich. Estaba bien, pero sin ninguna marca que lo dijera.
+3. El servidor de Node (`pg`) lee un `TIMESTAMP` sin zona como si fuera la **hora local de la máquina donde corre**. En México lo tomaba como las 15:38 locales, que equivalen a las 21:38 UTC, y eso era lo que viajaba al navegador.
+
+**Decisión:** las cuatro columnas de fecha (`creado_en` y `actualizado_en` en `usuarios` y `puntos`) pasan a `TIMESTAMPTZ`. PostgreSQL guarda el instante exacto, la API lo envía en ISO 8601 con zona UTC (`...Z`) y el navegador lo muestra en la hora local de quien lo mira. No hizo falta cambiar el código de la API ni el del frontend.
+
+**Migración:** `database/migraciones/2026-11-03-fechas-con-zona-horaria.sql` convierte una base existente conservando sus datos. Interpreta los valores antiguos como UTC, que es lo que contenían. Está en una transacción: o se aplica completa o no cambia nada.
+
+**Alternativas descartadas:**
+- *Decirle a `pg` que lea los `TIMESTAMP` como UTC* (un `setTypeParser` en el código). Es una línea y no toca la base, pero esconde el problema: depende de que el servidor de la base esté en UTC, y cualquier otra herramienta que lea la tabla volvería a interpretar mal la hora.
+- *Arrancar Node con `TZ=UTC`.* Haría coincidir las dos horas locales, pero obliga a recordarlo en cada entorno, incluido el despliegue.
+- *Convertir en el navegador restando seis horas.* Rompería a quien use la aplicación desde otra zona horaria, y en el horario de verano de otros países.
+
+**Verificado:**
+- Un registro existente creado a las 15:38 UTC pasó de mostrarse como "3:38 p.m." a "9:38 a.m.".
+- Los datos de la semilla se ven a las 11:20 a.m. del día en que se cargaron.
+- Un registro nuevo creado a las 09:59 en México salió con `15:59Z` desde la API.
+- `schema.sql` y `seed.sql` se ejecutaron en una base vacía sin errores.
+
+**Para el despliegue:** una base nueva (por ejemplo, en Neon) se crea con `schema.sql` ya corregido, así que no necesita la migración.

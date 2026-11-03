@@ -172,6 +172,7 @@ Reglas al crear o editar un usuario:
 - CORS está habilitado para el origen del frontend, que se configura en `.env`.
 - La conexión a la base de datos y la llave del JWT se toman de `.env`.
 - Todas las consultas SQL son parametrizadas.
+- Las fechas (`creadoEn` y `actualizadoEn`) se envían en formato ISO 8601 en UTC, es decir, terminan en `Z`, por ejemplo `2026-11-03T15:38:29.882Z`. El frontend las muestra en la hora local de quien las ve.
 
 ## Estructura del backend
 

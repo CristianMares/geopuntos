@@ -49,6 +49,8 @@ Requiere Docker Desktop abierto.
    docker compose up -d
    ```
 
+Si tu base ya existía antes de la corrección de fechas con zona horaria, conviértela una sola vez con la migración (conserva los datos). Los pasos están en [Base de datos](docs/base-de-datos.md#bases-creadas-antes-del-cambio).
+
 La base se publica en el puerto **5433** de tu máquina (dentro del contenedor sigue siendo el 5432). Así no choca con un PostgreSQL instalado localmente. Se cambia con `DB_PORT` en `.env`.
 
 ### Usuarios de prueba
