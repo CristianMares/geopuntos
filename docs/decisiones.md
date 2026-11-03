@@ -293,3 +293,13 @@ gitGraph
 - `schema.sql` y `seed.sql` se ejecutaron en una base vacía sin errores.
 
 **Para el despliegue:** una base nueva (por ejemplo, en Neon) se crea con `schema.sql` ya corregido, así que no necesita la migración.
+
+## D-28. Importar CSV: se lee en el navegador y la API valida de nuevo
+
+**Fecha:** 2026-11-03
+
+**Decisión:** el navegador lee el CSV y muestra una vista previa con las filas válidas y las que tienen errores; al confirmar envía la lista de puntos en JSON a `POST /api/puntos/importar`. La API vuelve a validar cada fila con las mismas reglas que al crear un punto y los guarda en **una sola transacción**: si una falla, no se guarda ninguno. No se agregó ninguna librería para leer CSV ni para subir archivos.
+
+**Por qué:** leerlo en el navegador permite avisar de los errores antes de guardar nada y evita manejar subida de archivos en la API. Validar de nuevo en la API es necesario porque nadie puede fiarse de lo que envía el navegador. La transacción evita dejar una importación a medias.
+
+**Detalles:** al exportar, los textos que empiezan con `=`, `+`, `-` o `@` llevan un apóstrofo delante para que Excel no los ejecute como fórmula. Para importar en la nube y en local se usa el mismo flujo, porque solo depende de la API.

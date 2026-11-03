@@ -162,6 +162,15 @@ Dos piezas reutilizables que viven en el marco (`Shell`), así que cualquier pan
 
 Cada tarjeta de la lista tiene iconos de editar y eliminar, y la ventana de información del punto tiene los botones **Editar** y **Eliminar**. Al eliminar desde el mapa, el punto sale de la lista y de la capa sin recargar.
 
+## Exportar e importar CSV (`/puntos`)
+
+- **Exportar CSV:** descarga los puntos que se ven en la tabla (respeta la búsqueda y el filtro) con las columnas `nombre`, `categoria`, `descripcion`, `latitud`, `longitud`, `registrado_por` y `creado_en`. Lleva la marca UTF-8 para que Excel muestre bien los acentos.
+- **Importar CSV:** el navegador lee el archivo y muestra una **vista previa** con cuántas filas son válidas y cuáles tienen errores (con su número de fila). Al confirmar se envían solo las válidas.
+  - Columnas obligatorias: `nombre`, `categoria`, `latitud` y `longitud`; `descripcion` es opcional. Se aceptan alias como `lat` o `lng`, el separador `,` o `;`, y la coma decimal.
+  - La categoría se reconoce sin importar mayúsculas ni acentos. Máximo 500 filas y 1 MB.
+  - Reconoce archivos guardados en UTF-8 y en el formato antiguo de Excel (Windows-1252).
+- El archivo de ejemplo está en `frontend/public/ejemplos/puntos-leon-gto.csv` y se descarga desde la propia ventana de importación.
+
 ## Pantalla de usuarios (`/usuarios`)
 
 Solo administradores: tabla con búsqueda y filtro por rol, y un panel lateral para crear y editar.

@@ -61,6 +61,35 @@ La base se publica en el puerto **5433** de tu máquina (dentro del contenedor s
 | `usuario1@geopuntos.com` | `Usuario12345` | Usuario |
 | `usuario2@geopuntos.com` | `Usuario12345` | Usuario |
 
+### Reiniciar la base de datos
+
+Borra **todos** los datos y vuelve a cargar los de ejemplo (`schema.sql` y `seed.sql`).
+
+**Base local en Docker:**
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+`-v` elimina el volumen con los datos. Al crearse de nuevo, PostgreSQL ejecuta otra vez los dos scripts.
+
+**Base en la nube (Neon) o cualquier PostgreSQL**, desde la raíz del repositorio y con `psql`:
+
+```bash
+psql "CADENA_DE_CONEXION" -f database/reiniciar.sql
+```
+
+La API no necesita reiniciarse.
+
+### Importar el CSV de ejemplo
+
+1. Inicia sesión y entra a **Puntos → Importar CSV**.
+2. Descarga el ejemplo desde esa misma ventana (**Descargar un CSV de ejemplo**) o toma `frontend/public/ejemplos/puntos-leon-gto.csv`.
+3. Elige el archivo, revisa la vista previa y pulsa **Importar**. Agrega 13 lugares de León, Guanajuato (coordenadas aproximadas).
+
+También se puede exportar la tabla con **Exportar CSV**; el archivo exportado se puede volver a importar.
+
 ## API
 
 Requiere Node.js 22 o superior y la base de datos corriendo.

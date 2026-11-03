@@ -25,6 +25,7 @@ Sin token, o con un token vencido o inválido, la API responde 401.
 | POST | `/api/puntos` | Con sesión | Crea un punto. `usuario_id` sale del token | 201, 400 |
 | PUT | `/api/puntos/:id` | Con sesión | Actualiza un punto | 200, 400, 404 |
 | DELETE | `/api/puntos/:id` | Con sesión | Elimina un punto | 204, 404 |
+| POST | `/api/puntos/importar` | Con sesión | Crea varios puntos de una vez (máximo 500). Cuerpo: `{ "puntos": [ ... ] }` con los mismos campos que al crear uno. Si alguna fila es inválida no se guarda ninguna | 201 `{ "importados": n }`, 400 |
 | GET | `/api/usuarios` | Admin | Lista de usuarios, sin `password_hash` | 200, 403 |
 | POST | `/api/usuarios` | Admin | Crea un usuario | 201, 400, 409 |
 | PUT | `/api/usuarios/:id` | Admin | Actualiza datos, rol, estado o contraseña | 200, 400, 404, 409 |
