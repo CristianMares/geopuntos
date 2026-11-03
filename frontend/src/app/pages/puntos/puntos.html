@@ -1,0 +1,116 @@
+<section class="pagina">
+  <header class="barra">
+    <div class="titulo">
+      <h1>Puntos</h1>
+      <span class="contador" aria-label="Total de puntos">{{ filtrados().length }}</span>
+    </div>
+    <a routerLink="/puntos/nuevo" class="btn btn-verde">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      Nuevo punto
+    </a>
+  </header>
+
+  <div class="filtros">
+    <input
+      #buscador
+      type="search"
+      placeholder="Buscar por nombre"
+      aria-label="Buscar por nombre"
+      [value]="busqueda()"
+      (input)="busqueda.set(buscador.value)"
+    />
+    <select #selector aria-label="Filtrar por categoría" (change)="alCambiarCategoria(selector.value)">
+      <option value="">Todas las categorías</option>
+      @for (categoria of categorias(); track categoria.id) {
+        <option [value]="categoria.id">{{ categoria.nombre }}</option>
+      }
+    </select>
+  </div>
+
+  @if (cargando()) {
+    <p class="estado">Cargando puntos...</p>
+  } @else if (error(); as mensaje) {
+    <div class="alerta-error" role="alert">{{ mensaje }}</div>
+    <button type="button" class="btn btn-secundario" (click)="cargar()">Reintentar</button>
+  } @else {
+    <div class="contenedor-tabla">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class="num">#</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Categoría</th>
+            <th scope="col" class="numero">Latitud</th>
+            <th scope="col" class="numero">Longitud</th>
+            <th scope="col">Registró</th>
+            <th scope="col">Fecha</th>
+            <th scope="col" class="acciones-col"><span class="visualmente-oculto">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (punto of filtrados(); track punto.id; let i = $index) {
+            <tr>
+              <td class="num">{{ i + 1 }}</td>
+              <th scope="row" class="nombre">{{ punto.nombre }}</th>
+              <td>
+                <span class="categoria">
+                  <span class="color" [style.background]="punto.categoria.color"></span>
+                  {{ punto.categoria.nombre }}
+                </span>
+              </td>
+              <td class="numero">{{ punto.latitud.toFixed(6) }}</td>
+              <td class="numero">{{ punto.longitud.toFixed(6) }}</td>
+              <td>{{ punto.registradoPor.nombre }}</td>
+              <td class="fecha">{{ fecha(punto.creadoEn) }}</td>
+              <td class="acciones">
+                <a
+                  class="icono"
+                  [routerLink]="['/mapa']"
+                  [queryParams]="{ punto: punto.id }"
+                  title="Ver en el mapa"
+                  [attr.aria-label]="'Ver ' + punto.nombre + ' en el mapa'"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 21s-6-5.6-6-10.5a6 6 0 1 1 12 0C18 15.4 12 21 12 21Z" />
+                    <circle cx="12" cy="10.5" r="2.2" />
+                  </svg>
+                </a>
+                <a
+                  class="icono"
+                  [routerLink]="['/puntos', punto.id, 'editar']"
+                  title="Editar"
+                  [attr.aria-label]="'Editar ' + punto.nombre"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4ZM14 6l4 4" />
+                  </svg>
+                </a>
+                <button
+                  type="button"
+                  class="icono peligro"
+                  title="Eliminar"
+                  [attr.aria-label]="'Eliminar ' + punto.nombre"
+                  (click)="eliminar(punto)"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13M10 11v6M14 11v6" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="vacio">
+                @if (puntos().length === 0) {
+                  Todavía no hay puntos registrados.
+                } @else {
+                  No hay puntos con esos filtros.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

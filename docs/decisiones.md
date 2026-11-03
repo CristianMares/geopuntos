@@ -239,3 +239,29 @@ gitGraph
 **Por qué:** es la forma estándar y no necesita ningún servicio externo. La ubicación solo se usa para dibujar la marca en el mapa: no se guarda ni se envía a la API.
 
 **Limitación:** el navegador solo permite la geolocalización en páginas seguras (HTTPS o `localhost`). Al desplegar, el frontend debe servirse por HTTPS.
+
+## D-24. Modal de confirmación con el elemento `<dialog>`
+
+**Fecha:** 2026-11-03
+
+**Decisión:** el modal de confirmación usa la etiqueta nativa `<dialog>` abierta con `showModal()`, en lugar de armarlo con un `div` y capas de CSS o de sumar una librería de componentes. El servicio devuelve una promesa, así que quien lo usa escribe `if (await confirmar(...))`.
+
+**Por qué:** el navegador ya resuelve lo difícil de un modal: el fondo oscuro, bloquear el resto de la página, atrapar el foco dentro de la ventana y cerrar con Esc. Una promesa evita pasar funciones de retorno entre componentes. El foco inicial queda en "Cancelar", para que pulsar Enter sin pensar no elimine nada.
+
+**Detalle:** Esc y un clic en el fondo se tratan como "Cancelar", de modo que la promesa nunca queda sin resolver.
+
+## D-25. Avisos temporales en lugar de alertas del navegador
+
+**Fecha:** 2026-11-03
+
+**Decisión:** los mensajes de éxito y de error se muestran como avisos en la esquina (`ToastService`), no con `alert()` ni dentro de cada pantalla. Los errores duran más (7 s) que los de éxito (4 s). Los de error usan `role="alert"` y los de éxito `role="status"`, para que los lectores de pantalla los anuncien.
+
+**Por qué:** un solo lugar y un mismo aspecto para todos los avisos, y no interrumpen como `alert()`. Los errores de validación de un campo siguen mostrándose debajo del propio campo, que es donde la persona los necesita.
+
+## D-26. Coordenadas del clic en el mapa
+
+**Fecha:** 2026-11-03
+
+**Decisión:** al hacer clic en el mapa del formulario, la latitud y la longitud se redondean a 6 decimales y la longitud se normaliza al rango de -180 a 180.
+
+**Por qué:** la columna de la base de datos es `NUMERIC(9,6)`, así que más decimales no se conservarían. Si el mapa se arrastra más allá del antimeridiano, OpenLayers devuelve longitudes como 190 o -250, y la API las rechazaría por estar fuera de rango. Normalizarlas evita un error sin sentido para quien solo hizo clic.

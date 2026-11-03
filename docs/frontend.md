@@ -118,6 +118,50 @@ flowchart LR
 
 La pantalla muestra un estado de carga, un mensaje de error con botón "Reintentar" si la API falla, y "No hay puntos con esos filtros" cuando no hay resultados.
 
+## Pantalla de puntos (`/puntos`)
+
+Tabla con número, nombre, categoría (con su color), latitud, longitud, quién lo registró y fecha. Tiene buscador por nombre, filtro por categoría, contador y el botón "Nuevo punto". Cada fila ofrece tres acciones:
+
+| Acción | Qué hace |
+|---|---|
+| Ver en el mapa | Abre `/mapa?punto=ID`: el mapa se centra con zoom en ese punto, lo resalta y abre su ventana |
+| Editar | Abre el formulario en `/puntos/ID/editar` |
+| Eliminar | Pide confirmación con el modal y, si se acepta, quita la fila |
+
+## Formulario de punto (`/puntos/nuevo` y `/puntos/:id/editar`)
+
+Un solo componente (`PuntoForm`) para crear y editar. Si la ruta trae `:id`, carga el punto desde la API y el título cambia a "Editar punto".
+
+- Formulario reactivo con nombre (3 a 100 caracteres), categoría, descripción opcional, latitud (-90 a 90) y longitud (-180 a 180). Cada error se muestra debajo de su campo y "Guardar" queda desactivado mientras haya errores.
+- Un mapa pequeño a un lado: **al hacer clic se coloca la marca y se llenan latitud y longitud** (`toLonLat` y `setValue`). Si las coordenadas se escriben a mano, la marca se mueve en el mapa. La marca toma el color de la categoría elegida.
+- Al guardar muestra "Punto guardado correctamente" y vuelve a la tabla. Si la API responde con un error, se muestra un aviso rojo y el formulario conserva lo escrito.
+- Si el punto no existe (por ejemplo `/puntos/999/editar`), muestra "Punto no encontrado" y vuelve a la tabla.
+
+```mermaid
+flowchart LR
+    C[Clic en el mapa] --> F[Latitud y longitud<br/>en el formulario]
+    T[Escribir las coordenadas] --> F
+    F --> M[Marca en el mapa]
+    F --> V{¿Formulario válido?}
+    V -- Sí --> G[Guardar activo]
+    V -- No --> D[Guardar desactivado<br/>y errores bajo cada campo]
+```
+
+## Modal de confirmación y avisos
+
+Dos piezas reutilizables que viven en el marco (`Shell`), así que cualquier pantalla las puede usar:
+
+| Pieza | Cómo se usa | Detalle |
+|---|---|---|
+| `ConfirmacionService` y `ModalConfirmacion` | `await confirmacion.confirmarEliminacion({ recurso, nombre, detalle? })` devuelve `true` o `false` | Muestra el nombre del registro y advierte que no se puede deshacer. Botón rojo "Sí, eliminar" y "Cancelar" |
+| `ToastService` y `Avisos` | `toast.exito('...')` y `toast.error('...')` | Avisos en la esquina que desaparecen solos (4 s los de éxito y 7 s los de error) |
+
+`PuntosService.eliminarConConfirmacion(punto)` junta ambas: pregunta, elimina, avisa y devuelve si el punto quedó eliminado. Lo usan la tabla y el mapa.
+
+## Acciones en el mapa
+
+Cada tarjeta de la lista tiene iconos de editar y eliminar, y la ventana de información del punto tiene los botones **Editar** y **Eliminar**. Al eliminar desde el mapa, el punto sale de la lista y de la capa sin recargar.
+
 ## Cómo correrlo
 
 ```bash
