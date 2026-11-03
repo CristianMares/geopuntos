@@ -2,18 +2,31 @@
 
 Sistema web para administrar usuarios y puntos geográficos con sus coordenadas, y mostrarlos en un mapa. Prueba técnica de ITSMARTS GEO.
 
+## Demo en línea
+
+| Pieza | Dirección |
+|---|---|
+| Aplicación | https://geopuntos-frontend.vercel.app |
+| API | https://geopuntos.onrender.com/api/salud |
+
+Los usuarios de prueba están en [Usuarios de prueba](#usuarios-de-prueba). La API gratuita se duerme tras 15 minutos sin uso: la primera petición puede tardar cerca de un minuto.
+
 ## Estructura
 
 | Carpeta | Contenido |
 |---|---|
 | `frontend/` | Aplicación Angular con OpenLayers |
 | `backend/` | API REST con Node.js, Express y TypeScript |
-| `database/` | Scripts de PostgreSQL (`schema.sql`, `seed.sql`) |
+| `database/` | Scripts de PostgreSQL: `schema.sql`, `seed.sql`, `reiniciar.sql` y `migraciones/` |
 | `docs/` | Documentación del proyecto |
 
 ## Tecnologías
 
-TypeScript, Angular, OpenLayers, Node.js con Express, PostgreSQL y Docker.
+TypeScript (modo estricto, sin `any`), Angular 21 (componentes standalone, signals y formularios reactivos), OpenLayers, Node.js con Express, PostgreSQL, JWT, bcrypt y Docker.
+
+## Funcionalidades
+
+Inicio de sesión con roles (administrador y usuario), mapa con calles y satélite, ubicación actual, tabla y formulario de puntos con mapa, administración de usuarios, exportar e importar puntos en CSV y despliegue en línea.
 
 ## Documentación
 
@@ -60,6 +73,35 @@ La base se publica en el puerto **5433** de tu máquina (dentro del contenedor s
 | `admin@geopuntos.com` | `Admin12345` | Administrador |
 | `usuario1@geopuntos.com` | `Usuario12345` | Usuario |
 | `usuario2@geopuntos.com` | `Usuario12345` | Usuario |
+
+### Reiniciar la base de datos
+
+Borra **todos** los datos y vuelve a cargar los de ejemplo (`schema.sql` y `seed.sql`).
+
+**Base local en Docker:**
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+`-v` elimina el volumen con los datos. Al crearse de nuevo, PostgreSQL ejecuta otra vez los dos scripts.
+
+**Base en la nube (Neon) o cualquier PostgreSQL**, desde la raíz del repositorio y con `psql`:
+
+```bash
+psql "CADENA_DE_CONEXION" -f database/reiniciar.sql
+```
+
+La API no necesita reiniciarse.
+
+### Importar el CSV de ejemplo
+
+1. Inicia sesión y entra a **Puntos → Importar CSV**.
+2. Descarga el ejemplo desde esa misma ventana (**Descargar un CSV de ejemplo**) o toma `frontend/public/ejemplos/puntos-leon-gto.csv`.
+3. Elige el archivo, revisa la vista previa y pulsa **Importar**. Agrega 13 lugares de León, Guanajuato (coordenadas aproximadas).
+
+También se puede exportar la tabla con **Exportar CSV**; el archivo exportado se puede volver a importar.
 
 ## API
 
@@ -124,4 +166,4 @@ La API gratuita de Render se duerme tras 15 minutos sin tráfico; la primera pet
 
 ## Estado
 
-En desarrollo. Las instrucciones de instalación y los usuarios de prueba se agregan conforme avanza cada módulo.
+Completo: los módulos del enunciado (login, mapa, puntos y usuarios) están terminados y publicados. Los puntos extra incluidos son el selector de capas con vista satelital, la ubicación actual, la exportación a CSV y el despliegue en línea.

@@ -116,6 +116,35 @@ export async function actualizar(id: number, datos: DatosPunto): Promise<PuntoDe
   }
 }
 
+/** Inserta todos los puntos en una sola transacción: o entran todos o no entra ninguno */
+export async function importar(datos: DatosPunto[], usuarioId: number): Promise<number> {
+  const cliente = await pool.connect();
+  try {
+    await cliente.query('BEGIN');
+    for (const punto of datos) {
+      await cliente.query(
+        `INSERT INTO puntos (nombre, descripcion, latitud, longitud, categoria_id, usuario_id)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          punto.nombre,
+          punto.descripcion,
+          punto.latitud,
+          punto.longitud,
+          punto.categoriaId,
+          usuarioId,
+        ],
+      );
+    }
+    await cliente.query('COMMIT');
+    return datos.length;
+  } catch (error) {
+    await cliente.query('ROLLBACK');
+    return traducirError(error);
+  } finally {
+    cliente.release();
+  }
+}
+
 export async function eliminar(id: number): Promise<void> {
   const { rowCount } = await pool.query('DELETE FROM puntos WHERE id = $1', [id]);
   if (rowCount === 0) throw ErrorHttp.noEncontrado('Punto');

@@ -3,20 +3,24 @@ import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Categoria } from '../../models/categoria';
 import { Punto } from '../../models/punto';
+import { ImportarPuntos } from '../../components/importar-puntos/importar-puntos';
 import { CategoriasService } from '../../services/categorias.service';
 import { PuntosService } from '../../services/puntos.service';
+import { ToastService } from '../../services/toast.service';
+import { descargarCsv, generarCsv, protegerFormula } from '../../utils/csv';
 import { mensajeError } from '../../utils/errores';
 import { formatearFecha } from '../../utils/fechas';
 
 @Component({
   selector: 'app-puntos',
-  imports: [RouterLink],
+  imports: [RouterLink, ImportarPuntos],
   templateUrl: './puntos.html',
   styleUrl: './puntos.scss',
 })
 export class Puntos implements OnInit {
   private readonly puntosService = inject(PuntosService);
   private readonly categoriasService = inject(CategoriasService);
+  private readonly toast = inject(ToastService);
 
   protected readonly puntos = signal<Punto[]>([]);
   protected readonly categorias = signal<Categoria[]>([]);
@@ -59,6 +63,31 @@ export class Puntos implements OnInit {
         this.error.set(mensajeError(error));
       },
     });
+  }
+
+  /** Descarga los puntos que se ven en la tabla (respeta la búsqueda y el filtro) */
+  protected exportar(): void {
+    const puntos = this.filtrados();
+    if (puntos.length === 0) {
+      this.toast.error('No hay puntos para exportar');
+      return;
+    }
+
+    const filas = [
+      ['nombre', 'categoria', 'descripcion', 'latitud', 'longitud', 'registrado_por', 'creado_en'],
+      ...puntos.map((p) => [
+        protegerFormula(p.nombre),
+        p.categoria.nombre,
+        protegerFormula(p.descripcion ?? ''),
+        String(p.latitud),
+        String(p.longitud),
+        protegerFormula(p.registradoPor.nombre),
+        p.creadoEn,
+      ]),
+    ];
+    const hoy = new Date().toLocaleDateString('sv-SE');
+    descargarCsv(`puntos-${hoy}.csv`, generarCsv(filas));
+    this.toast.exito(puntos.length === 1 ? '1 punto exportado' : `${puntos.length} puntos exportados`);
   }
 
   protected alCambiarCategoria(valor: string): void {

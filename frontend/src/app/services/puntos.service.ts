@@ -34,6 +34,11 @@ export class PuntosService {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
 
+  /** Crea varios puntos de una vez; la API los guarda todos o no guarda ninguno */
+  importar(puntos: DatosPunto[]): Observable<{ importados: number }> {
+    return this.http.post<{ importados: number }>(`${this.url}/importar`, { puntos });
+  }
+
   /**
    * Pregunta con el modal y, si la persona confirma, elimina el punto y avisa.
    * Devuelve true solo si el punto quedó eliminado.

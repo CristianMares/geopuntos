@@ -1,0 +1,114 @@
+<dialog
+  #dialogo
+  class="modal"
+  aria-labelledby="titulo-importar"
+  (close)="alCerrar()"
+>
+  <div class="tarjeta">
+    <header class="cabecera">
+      <h2 id="titulo-importar">Importar puntos desde CSV</h2>
+      <button type="button" class="cerrar" aria-label="Cerrar" (click)="cerrar()">×</button>
+    </header>
+
+    <div class="cuerpo">
+      <p class="ayuda">
+        El archivo necesita las columnas <strong>nombre</strong>, <strong>categoria</strong>,
+        <strong>latitud</strong> y <strong>longitud</strong>; <strong>descripcion</strong> es opcional.
+        La categoría debe ser una de las existentes. Máximo {{ maxFilas }} filas.
+      </p>
+      <p class="ayuda">
+        <a href="ejemplos/puntos-leon-gto.csv" download>Descargar un CSV de ejemplo</a>
+      </p>
+
+      <label class="archivo">
+        <input
+          #campoArchivo
+          type="file"
+          accept=".csv,text/csv"
+          (change)="alElegirArchivo($event)"
+        />
+        <span class="boton">Elegir archivo</span>
+        <span class="nombre">{{ nombreArchivo() ?? 'Ningún archivo elegido' }}</span>
+      </label>
+
+      @if (analisis(); as resultado) {
+        @if (resultado.errorGeneral) {
+          <div class="alerta-error" role="alert">{{ resultado.errorGeneral }}</div>
+        } @else {
+          <div class="resumen" role="status">
+            <span>{{ resultado.total }} filas leídas</span>
+            <span class="ok">{{ resultado.validas.length }} válidas</span>
+            @if (resultado.conError.length > 0) {
+              <span class="mal">{{ resultado.conError.length }} con errores</span>
+            }
+          </div>
+
+          @if (muestra().length > 0) {
+            <div class="contenedor-tabla">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Categoría</th>
+                    <th scope="col" class="numero">Latitud</th>
+                    <th scope="col" class="numero">Longitud</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (punto of muestra(); track $index) {
+                    <tr>
+                      <th scope="row">{{ punto.nombre }}</th>
+                      <td>{{ nombreCategoria(punto.categoriaId) }}</td>
+                      <td class="numero">{{ punto.latitud }}</td>
+                      <td class="numero">{{ punto.longitud }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (resultado.validas.length > muestra().length) {
+              <p class="nota">
+                Vista previa de {{ muestra().length }} de {{ resultado.validas.length }} filas válidas.
+              </p>
+            }
+          }
+
+          @if (resultado.conError.length > 0) {
+            <div class="errores">
+              <strong>Filas que se omitirán</strong>
+              <ul>
+                @for (error of erroresVisibles(); track error.fila) {
+                  <li>
+                    <span class="fila">Fila {{ error.fila }}:</span> {{ error.mensajes.join('. ') }}
+                  </li>
+                }
+              </ul>
+              @if (erroresOcultos() > 0) {
+                <p class="nota">y {{ erroresOcultos() }} filas más con errores.</p>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <footer class="acciones">
+      <button type="button" class="btn btn-secundario" (click)="cerrar()">Cancelar</button>
+      <button
+        type="button"
+        class="btn btn-primario"
+        [disabled]="!analisis() || analisis()!.validas.length === 0 || importando()"
+        (click)="importar()"
+      >
+        @if (importando()) {
+          Importando...
+        } @else if (analisis() && analisis()!.validas.length > 0) {
+          Importar {{ analisis()!.validas.length }}
+          {{ analisis()!.validas.length === 1 ? 'punto' : 'puntos' }}
+        } @else {
+          Importar
+        }
+      </button>
+    </footer>
+  </div>
+</dialog>

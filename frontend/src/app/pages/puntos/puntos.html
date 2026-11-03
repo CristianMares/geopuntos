@@ -4,10 +4,20 @@
       <h1>Puntos</h1>
       <span class="contador" aria-label="Total de puntos">{{ filtrados().length }}</span>
     </div>
-    <a routerLink="/puntos/nuevo" class="btn btn-verde">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-      Nuevo punto
-    </a>
+    <div class="acciones-barra">
+      <button type="button" class="btn btn-secundario" (click)="exportar()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+        Exportar CSV
+      </button>
+      <button type="button" class="btn btn-secundario" (click)="importador.abrir()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 20h14" /></svg>
+        Importar CSV
+      </button>
+      <a routerLink="/puntos/nuevo" class="btn btn-verde">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        Nuevo punto
+      </a>
+    </div>
   </header>
 
   <div class="filtros">
@@ -114,3 +124,5 @@
     </div>
   }
 </section>
+
+<app-importar-puntos #importador [categorias]="categorias()" (importado)="cargar()" />

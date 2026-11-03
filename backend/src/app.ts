@@ -7,7 +7,8 @@ import routes from './routes';
 export const app = express();
 
 app.use(cors({ origin: env.CORS_ORIGINS }));
-app.use(express.json());
+// El límite por defecto (100 kB) se queda corto para importar hasta 500 puntos de un CSV
+app.use(express.json({ limit: '1mb' }));
 
 app.use('/api', routes);
 
