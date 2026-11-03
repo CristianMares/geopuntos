@@ -1,0 +1,54 @@
+<div class="app">
+  <aside class="menu">
+    <div class="marca">
+      <span class="logo" aria-hidden="true"></span>
+      <div>
+        <strong>GeoPuntos</strong>
+        <small>ITSMARTS GEO</small>
+      </div>
+    </div>
+
+    <nav aria-label="Principal">
+      <a routerLink="/mapa" routerLinkActive="activo">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4Zm0 0v13m6-10v13" />
+        </svg>
+        Mapa
+      </a>
+      <a routerLink="/puntos" routerLinkActive="activo">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21s-6-5.6-6-10.5a6 6 0 1 1 12 0C18 15.4 12 21 12 21Z" />
+          <circle cx="12" cy="10.5" r="2.2" />
+        </svg>
+        Puntos
+      </a>
+      @if (auth.esAdmin()) {
+        <a routerLink="/usuarios" routerLinkActive="activo">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.2" />
+            <path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14c1.8.7 3 2.4 3 5" />
+          </svg>
+          Usuarios
+        </a>
+      }
+    </nav>
+
+    <div class="usuario">
+      <div class="persona">
+        <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+        <div class="datos">
+          <strong>{{ auth.usuario()?.nombre }}</strong>
+          <small>{{ etiquetaRol() }}</small>
+        </div>
+      </div>
+      <button type="button" class="salir" (click)="auth.cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="contenido">
+    <router-outlet />
+  </main>
+</div>
+
+<app-avisos />
+<app-modal-confirmacion />

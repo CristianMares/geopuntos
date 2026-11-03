@@ -1,0 +1,238 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* La pantalla ocupa todo el alto disponible; el formulario y el mapa se reparten ese espacio */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 20px 24px 22px;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 8px;
+  color: var(--azul);
+  font-weight: 600;
+  text-decoration: none;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  &:hover {
+    background: #e6f0f8;
+  }
+}
+
+.estado {
+  color: var(--texto-suave);
+}
+
+.cuerpo {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+
+  &.bloqueado {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 22px;
+  overflow-y: auto;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--blanco);
+
+  textarea {
+    resize: vertical;
+    min-height: 76px;
+  }
+  .opcional {
+    color: var(--texto-suave);
+    font-weight: 400;
+  }
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 4px;
+
+  .btn {
+    text-decoration: none;
+  }
+}
+
+.zona-mapa {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.caja-mapa {
+  position: relative;
+  flex: 1;
+  min-height: 320px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapa {
+  position: absolute;
+  inset: 0;
+}
+
+.ayuda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+
+.enlace {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--azul);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--azul-oscuro);
+  }
+}
+
+/* Botones propios del mapa, bajo el selector de capas (arriba a la derecha) */
+.herramientas {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.herramienta {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--azul-marino);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  &:hover:not(:disabled) {
+    background: var(--azul);
+    color: var(--blanco);
+  }
+  &:focus-visible {
+    outline: 3px solid rgba(21, 101, 166, 0.4);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  &.buscando {
+    cursor: progress;
+
+    svg {
+      animation: pulso 1s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes pulso {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .herramienta.buscando svg {
+    animation: none;
+  }
+}
+
+/* Con poco ancho el mapa pasa debajo del formulario y la pantalla se desplaza */
+@media (max-width: 1100px) {
+  .pagina {
+    height: auto;
+    min-height: 100%;
+  }
+  .cuerpo {
+    grid-template-columns: 1fr;
+  }
+  .formulario {
+    max-width: 620px;
+    overflow: visible;
+  }
+  .caja-mapa {
+    flex: none;
+    height: 62vh;
+    min-height: 380px;
+  }
+}
+
+@media (max-width: 960px) {
+  .pagina {
+    padding: 18px 14px;
+  }
+}
