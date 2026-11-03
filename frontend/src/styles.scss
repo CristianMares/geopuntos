@@ -136,6 +136,75 @@ textarea {
   }
 }
 
+/* Controles de OpenLayers y ol-ext: mismo aspecto que el resto de la aplicación */
+/* Se repite ".ol-control" para ganarle en especificidad a las posiciones por defecto de ol-ext */
+.ol-control.ol-zoom,
+.ol-control.ol-full-screen,
+.ol-control.ol-layerswitcher {
+  padding: 0;
+  background: transparent;
+}
+
+.ol-control.ol-zoom {
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ol-control.ol-full-screen {
+  top: 50px;
+  right: 10px;
+}
+
+.ol-control.ol-layerswitcher {
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.ol-zoom button,
+.ol-full-screen button,
+.ol-control.ol-layerswitcher > button {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+  color: var(--azul-marino);
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--azul);
+    color: var(--blanco);
+  }
+}
+
+/* El selector de capas solo cambia entre calles y satélite: sobran la opacidad y el reordenar */
+.ol-layerswitcher .layerswitcher-opacity,
+.ol-layerswitcher .layerup,
+.ol-layerswitcher .layerswitcher-progress {
+  display: none;
+}
+
+.ol-layerswitcher .panel-container {
+  min-width: 140px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+}
+
+.ol-scale-line {
+  background: rgba(11, 57, 84, 0.78);
+}
+
 .alerta-error {
   padding: 10px 12px;
   border: 1px solid #efc4c0;

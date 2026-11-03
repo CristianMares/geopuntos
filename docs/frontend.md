@@ -92,7 +92,8 @@ A la izquierda, un panel con buscador por nombre, filtro por categoría, contado
 
 | Elemento | Detalle |
 |---|---|
-| Capa base | OpenStreetMap (raster) |
+| Capas base | OpenStreetMap (calles) y Esri World Imagery (satélite), con selector `LayerSwitcher` de ol-ext |
+| Botones | Zoom, pantalla completa, "Ver todos los puntos" y "Ir a mi ubicación" (marca azul con círculo de precisión) |
 | Capa de puntos | Vectorial; cada punto se pinta con el color de su categoría mediante una función de estilo |
 | Punto elegido | Más grande, con borde blanco grueso y un halo azul |
 | Controles | Zoom, barra de escala (`ScaleLine`) y leyenda de categorías |
