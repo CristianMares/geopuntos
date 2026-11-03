@@ -1,5 +1,6 @@
-// Valores de producción. Al desplegar, apiUrl debe apuntar a la URL pública de la API.
+// Valores de producción: es lo que usa la aplicación publicada en Vercel.
+// En desarrollo se usa environment.development.ts (API local).
 export const environment = {
   produccion: true,
-  apiUrl: 'http://localhost:3001/api',
+  apiUrl: 'https://geopuntos.onrender.com/api',
 };
