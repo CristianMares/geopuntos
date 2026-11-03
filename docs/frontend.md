@@ -162,6 +162,10 @@ Dos piezas reutilizables que viven en el marco (`Shell`), así que cualquier pan
 
 Cada tarjeta de la lista tiene iconos de editar y eliminar, y la ventana de información del punto tiene los botones **Editar** y **Eliminar**. Al eliminar desde el mapa, el punto sale de la lista y de la capa sin recargar.
 
+## Pantalla de usuarios (`/usuarios`)
+
+Solo administradores: tabla con búsqueda y filtro por rol, y un panel lateral para crear y editar.
+
 ## Cómo correrlo
 
 ```bash
