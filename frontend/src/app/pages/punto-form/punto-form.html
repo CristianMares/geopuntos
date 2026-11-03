@@ -1,0 +1,106 @@
+<section class="pagina">
+  <header class="barra">
+    <a routerLink="/puntos" class="volver">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+      Puntos
+    </a>
+    <h1>{{ esEdicion ? 'Editar punto' : 'Nuevo punto' }}</h1>
+  </header>
+
+  @if (cargando()) {
+    <p class="estado">Cargando...</p>
+  }
+
+  <div class="cuerpo" [class.bloqueado]="cargando()">
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+      <div class="campo">
+        <label for="nombre">Nombre</label>
+        <input
+          id="nombre"
+          type="text"
+          formControlName="nombre"
+          autocomplete="off"
+          [class.invalido]="mensaje('nombre')"
+        />
+        @if (mensaje('nombre'); as texto) {
+          <span class="error">{{ texto }}</span>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="categoria">Categoría</label>
+        <select id="categoria" formControlName="categoriaId" [class.invalido]="mensaje('categoriaId')">
+          <option [ngValue]="null">Selecciona una categoría</option>
+          @for (categoria of categorias(); track categoria.id) {
+            <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+          }
+        </select>
+        @if (mensaje('categoriaId'); as texto) {
+          <span class="error">{{ texto }}</span>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="descripcion">Descripción <span class="opcional">(opcional)</span></label>
+        <textarea
+          id="descripcion"
+          rows="3"
+          formControlName="descripcion"
+          [class.invalido]="mensaje('descripcion')"
+        ></textarea>
+        @if (mensaje('descripcion'); as texto) {
+          <span class="error">{{ texto }}</span>
+        }
+      </div>
+
+      <div class="fila">
+        <div class="campo">
+          <label for="latitud">Latitud</label>
+          <input
+            id="latitud"
+            type="number"
+            step="any"
+            inputmode="decimal"
+            formControlName="latitud"
+            placeholder="19.432608"
+            [class.invalido]="mensaje('latitud')"
+          />
+          @if (mensaje('latitud'); as texto) {
+            <span class="error">{{ texto }}</span>
+          }
+        </div>
+        <div class="campo">
+          <label for="longitud">Longitud</label>
+          <input
+            id="longitud"
+            type="number"
+            step="any"
+            inputmode="decimal"
+            formControlName="longitud"
+            placeholder="-99.133209"
+            [class.invalido]="mensaje('longitud')"
+          />
+          @if (mensaje('longitud'); as texto) {
+            <span class="error">{{ texto }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="acciones">
+        <a routerLink="/puntos" class="btn btn-secundario">Cancelar</a>
+        <button type="submit" class="btn btn-primario" [disabled]="formulario.invalid || guardando()">
+          @if (guardando()) {
+            Guardando...
+          } @else {
+            Guardar
+          }
+        </button>
+      </div>
+    </form>
+
+    <div class="zona-mapa">
+      <div #contenedor class="mapa" role="application" aria-label="Mapa para colocar el punto"></div>
+      <p class="ayuda">Haz clic en el mapa para colocar el punto; las coordenadas se llenan solas.</p>
+    </div>
+  </div>
+</section>

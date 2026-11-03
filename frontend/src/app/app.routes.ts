@@ -19,8 +19,16 @@ export const routes: Routes = [
       },
       {
         path: 'puntos',
-        data: { titulo: 'Puntos' },
-        loadComponent: () => import('./pages/proximamente/proximamente').then((m) => m.Proximamente),
+        loadComponent: () => import('./pages/puntos/puntos').then((m) => m.Puntos),
+      },
+      {
+        // Debe ir antes que 'puntos/:id/editar'; ambas usan el mismo formulario
+        path: 'puntos/nuevo',
+        loadComponent: () => import('./pages/punto-form/punto-form').then((m) => m.PuntoForm),
+      },
+      {
+        path: 'puntos/:id/editar',
+        loadComponent: () => import('./pages/punto-form/punto-form').then((m) => m.PuntoForm),
       },
       {
         path: 'usuarios',
