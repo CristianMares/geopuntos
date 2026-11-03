@@ -163,6 +163,105 @@
   }
 }
 
+/* Botones propios del mapa, bajo los controles de OpenLayers (arriba a la derecha) */
+.herramientas {
+  position: absolute;
+  top: 90px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.herramienta {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--azul-marino);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  &:hover:not(:disabled) {
+    background: var(--azul);
+    color: var(--blanco);
+  }
+  &:focus-visible {
+    outline: 3px solid rgba(21, 101, 166, 0.4);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: progress;
+  }
+  &.buscando svg {
+    animation: pulso 1s ease-in-out infinite;
+  }
+}
+
+@keyframes pulso {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .herramienta.buscando svg {
+    animation: none;
+  }
+}
+
+/* Aviso temporal, por ejemplo cuando se rechaza el permiso de ubicación */
+.aviso {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(460px, calc(100% - 140px));
+  padding: 10px 12px 10px 14px;
+  border: 1px solid #efc4c0;
+  border-radius: var(--radio);
+  background: var(--rojo-suave);
+  box-shadow: var(--sombra);
+  color: var(--rojo);
+  font-size: 13.5px;
+  transform: translateX(-50%);
+
+  button {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(160, 43, 31, 0.12);
+    }
+  }
+}
+
 /* Ventana de información (overlay de OpenLayers) */
 .ventana {
   /* La posición la calcula OpenLayers con el contenedor del overlay */

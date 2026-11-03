@@ -66,6 +66,43 @@
       }
     </div>
 
+    <div #herramientas class="herramientas">
+      <button
+        type="button"
+        class="herramienta"
+        title="Ver todos los puntos"
+        aria-label="Ver todos los puntos"
+        (click)="verTodos()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" />
+          <circle cx="12" cy="12" r="2.4" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="herramienta"
+        [class.buscando]="ubicando()"
+        [disabled]="ubicando()"
+        title="Ir a mi ubicación"
+        aria-label="Ir a mi ubicación"
+        (click)="irAMiUbicacion()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="1.8" />
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        </svg>
+      </button>
+    </div>
+
+    @if (aviso(); as mensaje) {
+      <div class="aviso" role="status">
+        <span>{{ mensaje }}</span>
+        <button type="button" aria-label="Cerrar aviso" (click)="cerrarAviso()">×</button>
+      </div>
+    }
+
     <!-- OpenLayers mueve este elemento sobre el mapa y lo coloca en el punto elegido -->
     <div #ventana class="ventana">
       @if (seleccionado(); as punto) {
