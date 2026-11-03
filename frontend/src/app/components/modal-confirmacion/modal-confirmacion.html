@@ -1,0 +1,30 @@
+<dialog
+  #dialogo
+  class="modal"
+  aria-labelledby="titulo-confirmacion"
+  aria-describedby="texto-confirmacion"
+  (cancel)="alCancelar($event)"
+  (click)="alHacerClic($event)"
+>
+  @if (confirmacion.solicitud(); as solicitud) {
+    <div class="tarjeta">
+      <span class="icono" aria-hidden="true">!</span>
+      <h2 id="titulo-confirmacion">¿Eliminar {{ solicitud.recurso }}?</h2>
+      <p id="texto-confirmacion">
+        Vas a eliminar <strong>{{ solicitud.nombre }}</strong
+        >. Esta acción no se puede deshacer.
+      </p>
+      @if (solicitud.detalle) {
+        <p class="detalle">{{ solicitud.detalle }}</p>
+      }
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" autofocus (click)="confirmacion.responder(false)">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-peligro" (click)="confirmacion.responder(true)">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  }
+</dialog>
