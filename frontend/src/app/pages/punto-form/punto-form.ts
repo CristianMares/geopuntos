@@ -15,11 +15,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Feature, Map, View } from 'ol';
-import { defaults as controlesPorDefecto } from 'ol/control';
+import { Control, ScaleLine, defaults as controlesPorDefecto } from 'ol/control';
 import { Point } from 'ol/geom';
-import { Tile as CapaTesela, Vector as CapaVectorial } from 'ol/layer';
+import { Vector as CapaVectorial } from 'ol/layer';
 import { fromLonLat, toLonLat } from 'ol/proj';
-import { OSM, Vector as FuenteVectorial } from 'ol/source';
+import { Vector as FuenteVectorial } from 'ol/source';
 import { Circle as EstiloCirculo, Fill, Stroke, Style } from 'ol/style';
 import { forkJoin, of } from 'rxjs';
 import { Categoria } from '../../models/categoria';
@@ -28,6 +28,14 @@ import { CategoriasService } from '../../services/categorias.service';
 import { PuntosService } from '../../services/puntos.service';
 import { ToastService } from '../../services/toast.service';
 import { mensajeError } from '../../utils/errores';
+import {
+  UbicacionUsuario,
+  ZOOM_MI_UBICACION,
+  crearCapaDeUbicacion,
+  crearCapasBase,
+  crearSelectorDeCapas,
+  obtenerUbicacion,
+} from '../../utils/mapa-comun';
 
 const CENTRO_INICIAL = fromLonLat([-99.1332, 19.4326]);
 const ZOOM_INICIAL = 11;
@@ -62,6 +70,7 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
   private readonly destruccion = inject(DestroyRef);
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLDivElement>>('contenedor');
+  private readonly herramientas = viewChild.required<ElementRef<HTMLDivElement>>('herramientas');
 
   /** Con :id en la ruta el formulario edita; sin él, crea */
   private readonly idEdicion = Number(this.ruta.snapshot.paramMap.get('id')) || null;
@@ -70,6 +79,10 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
   protected readonly categorias = signal<Categoria[]>([]);
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
+  protected readonly ubicando = signal(false);
+  /** Última ubicación obtenida del navegador; permite usarla como coordenadas del punto */
+  private readonly ultimaUbicacion = signal<UbicacionUsuario | null>(null);
+  protected readonly hayUbicacion = computed(() => this.ultimaUbicacion() !== null);
   private readonly categoriaElegida = signal<number | null>(null);
 
   protected readonly formulario = new FormGroup({
@@ -100,8 +113,16 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
   );
 
   private mapa?: Map;
+  private observador?: ResizeObserver;
   private readonly fuente = new FuenteVectorial<Feature<Point>>();
-  private readonly capa = new CapaVectorial({ source: this.fuente, style: () => this.estiloMarca() });
+  private readonly capa = new CapaVectorial({
+    source: this.fuente,
+    style: () => this.estiloMarca(),
+    properties: { displayInLayerSwitcher: false },
+  });
+  // Mismas capas base y misma marca de ubicación que la pantalla del mapa
+  private readonly capasBase = crearCapasBase();
+  private readonly ubicacion = crearCapaDeUbicacion();
 
   constructor() {
     // Si se escriben las coordenadas a mano, la marca se mueve en el mapa
@@ -135,11 +156,16 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.mapa = new Map({
       target: this.contenedor().nativeElement,
-      layers: [new CapaTesela({ source: new OSM() }), this.capa],
+      layers: [this.capasBase.calles, this.capasBase.satelite, this.capa, this.ubicacion.capa],
       controls: controlesPorDefecto({
         rotate: false,
         zoomOptions: { zoomInTipLabel: 'Acercar', zoomOutTipLabel: 'Alejar' },
-      }),
+      }).extend([
+        new ScaleLine({ units: 'metric' }),
+        // Los botones propios son un control más, para que el panel de capas se abra por encima
+        new Control({ element: this.herramientas().nativeElement }),
+        crearSelectorDeCapas(),
+      ]),
       view: new View({ center: CENTRO_INICIAL, zoom: ZOOM_INICIAL }),
     });
 
@@ -148,12 +174,17 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
       this.fijarDesdeMapa(redondear(latitud), redondear(normalizarLongitud(longitud)));
     });
 
+    // El mapa ocupa todo el alto disponible: si el contenedor cambia de tamaño, se reajusta
+    this.observador = new ResizeObserver(() => this.mapa?.updateSize());
+    this.observador.observe(this.contenedor().nativeElement);
+
     // Si los datos de edición llegaron antes que el mapa, se coloca la marca ahora
     this.moverMarcaDesdeFormulario(ZOOM_CON_PUNTO);
   }
 
   ngOnDestroy(): void {
     // Libera el mapa y sus listeners al salir de la pantalla
+    this.observador?.disconnect();
     this.mapa?.setTarget(undefined);
     this.mapa = undefined;
   }
@@ -180,6 +211,33 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
           ? 'La longitud es obligatoria'
           : 'La longitud debe estar entre -180 y 180';
     }
+  }
+
+  /** Va a la ubicación de la persona y deja la marca azul; el punto del formulario no cambia */
+  protected async irAMiUbicacion(): Promise<void> {
+    this.ubicando.set(true);
+    try {
+      const ubicacion = await obtenerUbicacion();
+      this.ultimaUbicacion.set(ubicacion);
+      const centro = this.ubicacion.marcar(ubicacion);
+      const vista = this.mapa?.getView();
+      vista?.animate({
+        center: centro,
+        zoom: Math.max(vista.getZoom() ?? 0, ZOOM_MI_UBICACION),
+        duration: 700,
+      });
+    } catch (error) {
+      this.toast.error(error instanceof Error ? error.message : 'No se pudo obtener tu ubicación');
+    } finally {
+      this.ubicando.set(false);
+    }
+  }
+
+  /** Copia la última ubicación obtenida a las coordenadas del punto */
+  protected usarMiUbicacion(): void {
+    const ubicacion = this.ultimaUbicacion();
+    if (!ubicacion) return;
+    this.fijarDesdeMapa(redondear(ubicacion.latitud), redondear(ubicacion.longitud));
   }
 
   protected guardar(): void {
@@ -227,7 +285,7 @@ export class PuntoForm implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /** Un clic en el mapa fija las coordenadas y las escribe en el formulario */
+  /** Fija las coordenadas, las escribe en el formulario y coloca la marca */
   private fijarDesdeMapa(latitud: number, longitud: number): void {
     const { latitud: campoLat, longitud: campoLon } = this.formulario.controls;
     campoLat.setValue(latitud, { emitEvent: false });
