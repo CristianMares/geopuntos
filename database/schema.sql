@@ -8,8 +8,8 @@ CREATE TABLE usuarios (
     password_hash   VARCHAR(255) NOT NULL,
     rol             VARCHAR(20)  NOT NULL CHECK (rol IN ('ADMIN', 'USUARIO')),
     activo          BOOLEAN      NOT NULL DEFAULT TRUE,
-    creado_en       TIMESTAMP    NOT NULL DEFAULT NOW(),
-    actualizado_en  TIMESTAMP    NOT NULL DEFAULT NOW()
+    creado_en       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    actualizado_en  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 -- Correo único sin distinguir mayúsculas (D-04)
@@ -29,8 +29,8 @@ CREATE TABLE puntos (
     longitud        NUMERIC(9, 6) NOT NULL CHECK (longitud BETWEEN -180 AND 180),
     categoria_id    INT           NOT NULL REFERENCES categorias (id) ON DELETE RESTRICT,
     usuario_id      INT           NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
-    creado_en       TIMESTAMP     NOT NULL DEFAULT NOW(),
-    actualizado_en  TIMESTAMP     NOT NULL DEFAULT NOW()
+    creado_en       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    actualizado_en  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
 -- Índices de apoyo para filtros y JOIN (D-06)
