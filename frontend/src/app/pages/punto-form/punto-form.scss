@@ -46,7 +46,7 @@
 
 .cuerpo {
   display: grid;
-  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 
@@ -114,12 +114,19 @@
   font-size: 13.5px;
 }
 
+/* Con poco ancho el mapa pasa debajo del formulario para no quedar angosto */
+@media (max-width: 1180px) {
+  .cuerpo {
+    grid-template-columns: 1fr;
+  }
+  .formulario {
+    max-width: 620px;
+  }
+}
+
 @media (max-width: 960px) {
   .pagina {
     padding: 18px 14px;
-  }
-  .cuerpo {
-    grid-template-columns: 1fr;
   }
   .zona-mapa {
     position: static;
