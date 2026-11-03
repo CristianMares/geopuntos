@@ -5,11 +5,10 @@
       Puntos
     </a>
     <h1>{{ esEdicion ? 'Editar punto' : 'Nuevo punto' }}</h1>
+    @if (cargando()) {
+      <span class="estado">Cargando...</span>
+    }
   </header>
-
-  @if (cargando()) {
-    <p class="estado">Cargando...</p>
-  }
 
   <div class="cuerpo" [class.bloqueado]="cargando()">
     <form class="formulario" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
@@ -99,8 +98,36 @@
     </form>
 
     <div class="zona-mapa">
-      <div #contenedor class="mapa" role="application" aria-label="Mapa para colocar el punto"></div>
-      <p class="ayuda">Haz clic en el mapa para colocar el punto; las coordenadas se llenan solas.</p>
+      <div class="caja-mapa">
+        <div #contenedor class="mapa" role="application" aria-label="Mapa para colocar el punto"></div>
+
+        <div #herramientas class="herramientas">
+          <button
+            type="button"
+            class="herramienta"
+            [class.buscando]="ubicando()"
+            [disabled]="ubicando()"
+            title="Ir a mi ubicación"
+            aria-label="Ir a mi ubicación"
+            (click)="irAMiUbicacion()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="1.8" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p class="ayuda">
+        Haz clic en el mapa para colocar el punto; las coordenadas se llenan solas.
+        @if (hayUbicacion()) {
+          <button type="button" class="enlace" (click)="usarMiUbicacion()">
+            Usar mi ubicación como coordenadas
+          </button>
+        }
+      </p>
     </div>
   </div>
 </section>

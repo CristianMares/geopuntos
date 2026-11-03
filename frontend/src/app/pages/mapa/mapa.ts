@@ -15,31 +15,28 @@ import { forkJoin } from 'rxjs';
 import { Feature, Map, Overlay, View } from 'ol';
 import { Control, FullScreen, ScaleLine, defaults as controlesPorDefecto } from 'ol/control';
 import { boundingExtent } from 'ol/extent';
-import { Point, Polygon } from 'ol/geom';
-import { circular } from 'ol/geom/Polygon';
-import { Tile as CapaTesela, Vector as CapaVectorial } from 'ol/layer';
+import { Point } from 'ol/geom';
+import { Vector as CapaVectorial } from 'ol/layer';
 import { fromLonLat } from 'ol/proj';
-import { OSM, Vector as FuenteVectorial, XYZ } from 'ol/source';
+import { Vector as FuenteVectorial } from 'ol/source';
 import { Circle as EstiloCirculo, Fill, Stroke, Style } from 'ol/style';
 import type { FeatureLike } from 'ol/Feature';
-import LayerSwitcher from 'ol-ext/control/LayerSwitcher';
 import { Categoria } from '../../models/categoria';
 import { Punto } from '../../models/punto';
 import { CategoriasService } from '../../services/categorias.service';
 import { PuntosService } from '../../services/puntos.service';
 import { mensajeError } from '../../utils/errores';
+import {
+  ZOOM_MI_UBICACION,
+  crearCapaDeUbicacion,
+  crearCapasBase,
+  crearSelectorDeCapas,
+  obtenerUbicacion,
+} from '../../utils/mapa-comun';
 
 /** Centro inicial (Ciudad de México) mientras no hay puntos que encuadrar */
 const CENTRO_INICIAL = fromLonLat([-99.1332, 19.4326]);
 const ZOOM_AL_ELEGIR = 15;
-const ZOOM_MI_UBICACION = 16;
-
-/** Imágenes satelitales de Esri: gratuitas para un uso ligero, pidiendo atribución */
-const URL_SATELITE =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const ATRIBUCION_SATELITE = 'Imágenes © Esri, Maxar, Earthstar Geographics';
-
-const COLOR_UBICACION = '#1565a6';
 
 @Component({
   selector: 'app-mapa',
@@ -97,25 +94,9 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
     properties: { displayInLayerSwitcher: false },
   });
 
-  // Capas base: el selector de ol-ext las reconoce por "baseLayer" y muestra su "title"
-  private readonly capaCalles = new CapaTesela({
-    source: new OSM(),
-    properties: { title: 'Calles', baseLayer: true },
-  });
-  private readonly capaSatelite = new CapaTesela({
-    visible: false,
-    source: new XYZ({ url: URL_SATELITE, maxZoom: 19, attributions: ATRIBUCION_SATELITE }),
-    properties: { title: 'Satélite', baseLayer: true },
-  });
-
-  // Marca azul con el círculo de precisión de la ubicación del usuario
-  private readonly fuenteUbicacion = new FuenteVectorial<Feature<Point | Polygon>>();
-  private readonly capaUbicacion = new CapaVectorial({
-    source: this.fuenteUbicacion,
-    zIndex: 5,
-    style: (f) => this.estiloUbicacion(f),
-    properties: { displayInLayerSwitcher: false },
-  });
+  // Capas base (calles y satélite) y marca de la ubicación del usuario, compartidas con el formulario
+  private readonly capasBase = crearCapasBase();
+  private readonly ubicacion = crearCapaDeUbicacion();
   private readonly estilos = new globalThis.Map<string, Style[]>();
   private encuadrado = false;
 
@@ -142,7 +123,7 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
 
     this.mapa = new Map({
       target: this.contenedor().nativeElement,
-      layers: [this.capaCalles, this.capaSatelite, this.capa, this.capaUbicacion],
+      layers: [this.capasBase.calles, this.capasBase.satelite, this.capa, this.ubicacion.capa],
       overlays: [this.overlay],
       controls: controlesPorDefecto({
         rotate: false,
@@ -152,7 +133,7 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
         new FullScreen({ tipLabel: 'Pantalla completa' }),
         // Los botones propios son un control más, para que el panel de capas se abra por encima
         new Control({ element: this.herramientas().nativeElement }),
-        new LayerSwitcher({ tipLabel: 'Capas del mapa', reverse: true, trash: false, extent: false }),
+        crearSelectorDeCapas(),
       ]),
       view: new View({ center: CENTRO_INICIAL, zoom: 11 }),
     });
@@ -233,25 +214,23 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Pide la ubicación al navegador (que antes pregunta al usuario si lo permite) y va hacia ella */
-  protected irAMiUbicacion(): void {
-    if (!('geolocation' in navigator)) {
-      this.mostrarAviso('Tu navegador no permite obtener la ubicación');
-      return;
-    }
-
+  protected async irAMiUbicacion(): Promise<void> {
     this.ubicando.set(true);
-    navigator.geolocation.getCurrentPosition(
-      (posicion) => {
-        this.ubicando.set(false);
-        const { longitude, latitude, accuracy } = posicion.coords;
-        this.marcarUbicacion(longitude, latitude, accuracy);
-      },
-      (error) => {
-        this.ubicando.set(false);
-        this.mostrarAviso(this.mensajeUbicacion(error));
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
-    );
+    try {
+      const centro = this.ubicacion.marcar(await obtenerUbicacion());
+      const vista = this.mapa?.getView();
+      vista?.animate({
+        center: centro,
+        zoom: Math.max(vista.getZoom() ?? 0, ZOOM_MI_UBICACION),
+        duration: 700,
+      });
+    } catch (error) {
+      this.mostrarAviso(
+        error instanceof Error ? error.message : 'No se pudo obtener tu ubicación',
+      );
+    } finally {
+      this.ubicando.set(false);
+    }
   }
 
   protected cerrarAviso(): void {
@@ -259,60 +238,10 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
     this.aviso.set(null);
   }
 
-  private marcarUbicacion(longitud: number, latitud: number, precision: number): void {
-    const centro = fromLonLat([longitud, latitud]);
-
-    const circulo = circular([longitud, latitud], precision, 64).transform(
-      'EPSG:4326',
-      'EPSG:3857',
-    ) as Polygon;
-    this.fuenteUbicacion.clear();
-    this.fuenteUbicacion.addFeatures([
-      new Feature<Polygon>({ geometry: circulo, tipo: 'precision' }),
-      new Feature<Point>({ geometry: new Point(centro), tipo: 'posicion' }),
-    ]);
-
-    const vista = this.mapa?.getView();
-    vista?.animate({
-      center: centro,
-      zoom: Math.max(vista.getZoom() ?? 0, ZOOM_MI_UBICACION),
-      duration: 700,
-    });
-  }
-
-  private mensajeUbicacion(error: GeolocationPositionError): string {
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        return 'Permiso de ubicación denegado. Actívalo en el navegador para usar esta función';
-      case error.POSITION_UNAVAILABLE:
-        return 'No se pudo determinar tu ubicación';
-      case error.TIMEOUT:
-        return 'Se agotó el tiempo esperando tu ubicación. Inténtalo de nuevo';
-      default:
-        return 'No se pudo obtener tu ubicación';
-    }
-  }
-
   private mostrarAviso(texto: string): void {
     clearTimeout(this.temporizadorAviso);
     this.aviso.set(texto);
     this.temporizadorAviso = setTimeout(() => this.aviso.set(null), 6000);
-  }
-
-  private estiloUbicacion(feature: FeatureLike): Style {
-    if (feature.get('tipo') === 'precision') {
-      return new Style({
-        fill: new Fill({ color: 'rgba(21, 101, 166, 0.12)' }),
-        stroke: new Stroke({ color: 'rgba(21, 101, 166, 0.45)', width: 1 }),
-      });
-    }
-    return new Style({
-      image: new EstiloCirculo({
-        radius: 8,
-        fill: new Fill({ color: COLOR_UBICACION }),
-        stroke: new Stroke({ color: '#ffffff', width: 3 }),
-      }),
-    });
   }
 
   /** Si el punto se eligió en el mapa, desplaza la lista hasta su tarjeta */
