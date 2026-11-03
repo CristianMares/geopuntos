@@ -30,22 +30,46 @@
         <button type="button" class="btn btn-secundario" (click)="cargar()">Reintentar</button>
       } @else {
         @for (punto of filtrados(); track punto.id) {
-          <button
-            type="button"
-            class="tarjeta"
-            [class.activa]="punto.id === seleccionadoId()"
-            [attr.aria-pressed]="punto.id === seleccionadoId()"
-            (click)="elegir(punto)"
-          >
-            <span class="color" [style.background]="punto.categoria.color"></span>
-            <span class="texto">
-              <strong>{{ punto.nombre }}</strong>
-              <small>{{ punto.categoria.nombre }}</small>
-              <small class="coordenadas">
-                {{ punto.latitud.toFixed(5) }}, {{ punto.longitud.toFixed(5) }}
-              </small>
-            </span>
-          </button>
+          <div class="tarjeta" [class.activa]="punto.id === seleccionadoId()">
+            <button
+              type="button"
+              class="seleccionar"
+              [attr.aria-pressed]="punto.id === seleccionadoId()"
+              (click)="elegir(punto)"
+            >
+              <span class="color" [style.background]="punto.categoria.color"></span>
+              <span class="texto">
+                <strong>{{ punto.nombre }}</strong>
+                <small>{{ punto.categoria.nombre }}</small>
+                <small class="coordenadas">
+                  {{ punto.latitud.toFixed(5) }}, {{ punto.longitud.toFixed(5) }}
+                </small>
+              </span>
+            </button>
+            <div class="acciones-tarjeta">
+              <a
+                class="icono"
+                [routerLink]="['/puntos', punto.id, 'editar']"
+                title="Editar"
+                [attr.aria-label]="'Editar ' + punto.nombre"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4ZM14 6l4 4" />
+                </svg>
+              </a>
+              <button
+                type="button"
+                class="icono peligro"
+                title="Eliminar"
+                [attr.aria-label]="'Eliminar ' + punto.nombre"
+                (click)="eliminar(punto)"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13M10 11v6M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </div>
         } @empty {
           <p class="estado">No hay puntos con esos filtros.</p>
         }
@@ -123,6 +147,14 @@
           <dt>Registró</dt>
           <dd>{{ punto.registradoPor.nombre }}</dd>
         </dl>
+        <div class="acciones-ventana">
+          <a class="btn btn-secundario btn-chico" [routerLink]="['/puntos', punto.id, 'editar']">
+            Editar
+          </a>
+          <button type="button" class="btn btn-peligro btn-chico" (click)="eliminar(punto)">
+            Eliminar
+          </button>
+        </div>
       }
     </div>
   </section>

@@ -73,15 +73,11 @@
 
 .tarjeta {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: stretch;
   width: 100%;
-  padding: 12px;
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   background: var(--blanco);
-  text-align: left;
-  cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 
   &:hover {
@@ -92,13 +88,34 @@
     background: #eef5fb;
     box-shadow: inset 3px 0 0 var(--azul);
   }
-  &:focus-visible {
-    outline: 3px solid rgba(21, 101, 166, 0.35);
-    outline-offset: 2px;
-  }
 
+  .seleccionar {
+    display: flex;
+    align-items: flex-start;
+    flex: 1;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px;
+    border: 0;
+    border-radius: var(--radio);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 3px solid rgba(21, 101, 166, 0.35);
+      outline-offset: -2px;
+    }
+  }
   .color {
     margin-top: 5px;
+  }
+  .acciones-tarjeta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 6px 4px 0;
   }
   .texto {
     display: flex;
@@ -125,6 +142,44 @@
   height: 12px;
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--blanco), 0 0 0 3px var(--borde);
+}
+
+/* Botones de icono de las tarjetas (editar y eliminar) */
+.icono {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--azul);
+  cursor: pointer;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  &:hover {
+    background: #e6f0f8;
+  }
+  &.peligro {
+    color: var(--rojo);
+
+    &:hover {
+      background: var(--rojo-suave);
+    }
+  }
+  &:focus-visible {
+    outline: 3px solid rgba(21, 101, 166, 0.35);
+    outline-offset: 1px;
+  }
 }
 
 /* Zona del mapa */
@@ -320,6 +375,16 @@
     dd {
       margin: 0;
       font-variant-numeric: tabular-nums;
+    }
+  }
+  .acciones-ventana {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+
+    .btn {
+      flex: 1;
+      text-decoration: none;
     }
   }
   .cerrar {

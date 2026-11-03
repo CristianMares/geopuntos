@@ -10,6 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Feature, Map, Overlay, View } from 'ol';
 import { Control, FullScreen, ScaleLine, defaults as controlesPorDefecto } from 'ol/control';
@@ -42,6 +43,7 @@ const COLOR_UBICACION = '#1565a6';
 
 @Component({
   selector: 'app-mapa',
+  imports: [RouterLink],
   templateUrl: './mapa.html',
   styleUrl: './mapa.scss',
 })
@@ -49,6 +51,10 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
   private readonly puntosService = inject(PuntosService);
   private readonly categoriasService = inject(CategoriasService);
   private readonly anfitrion = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** Desde la tabla de puntos se llega con /mapa?punto=ID para verlo centrado */
+  private idInicial =
+    Number(inject(ActivatedRoute).snapshot.queryParamMap.get('punto')) || null;
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLDivElement>>('contenedor');
   private readonly ventana = viewChild.required<ElementRef<HTMLDivElement>>('ventana');
@@ -170,6 +176,7 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
 
     this.sincronizar(this.filtrados(), this.seleccionadoId());
     // Si los datos llegaron antes de que existiera el mapa, se encuadra ahora
+    this.aplicarIdInicial();
     this.encuadrarTodos();
   }
 
@@ -191,6 +198,7 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
         this.puntos.set(puntos);
         this.categorias.set(categorias);
         this.cargando.set(false);
+        this.aplicarIdInicial();
         this.encuadrarTodos();
       },
       error: (error: unknown) => {
@@ -315,6 +323,26 @@ export class Mapa implements OnInit, AfterViewInit, OnDestroy {
         .querySelector('.tarjeta.activa')
         ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
+  }
+
+  /** Pregunta antes de eliminar; si se elimina, el punto sale de la lista y del mapa */
+  protected async eliminar(punto: Punto): Promise<void> {
+    const eliminado = await this.puntosService.eliminarConConfirmacion(punto);
+    if (!eliminado) return;
+    this.puntos.update((lista) => lista.filter((p) => p.id !== punto.id));
+    if (this.seleccionadoId() === punto.id) this.seleccionadoId.set(null);
+  }
+
+  /** Si se llegó con ?punto=ID, lo elige y centra en lugar de encuadrar todos */
+  private aplicarIdInicial(): void {
+    const id = this.idInicial;
+    if (id === null || !this.mapa) return;
+    const punto = this.puntos().find((p) => p.id === id);
+    if (!punto) return;
+    this.idInicial = null;
+    this.encuadrado = true;
+    this.elegir(punto);
+    this.mostrarTarjetaActiva();
   }
 
   protected cerrarVentana(): void {
