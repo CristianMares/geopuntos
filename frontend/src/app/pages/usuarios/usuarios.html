@@ -1,0 +1,192 @@
+<section class="pagina" [class.con-panel]="panelAbierto()">
+  <div class="principal">
+    <header class="barra">
+      <div class="titulo">
+        <h1>Usuarios</h1>
+        <span class="contador" aria-label="Total de usuarios">{{ filtrados().length }}</span>
+      </div>
+      <button type="button" class="btn btn-verde" (click)="abrirNuevo()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        Nuevo usuario
+      </button>
+    </header>
+
+    <div class="filtros">
+      <input
+        #buscador
+        type="search"
+        placeholder="Buscar por nombre o correo"
+        aria-label="Buscar por nombre o correo"
+        [value]="busqueda()"
+        (input)="busqueda.set(buscador.value)"
+      />
+      <select #selector aria-label="Filtrar por rol" (change)="alCambiarRol(selector.value)">
+        <option value="">Todos los roles</option>
+        <option value="ADMIN">Administrador</option>
+        <option value="USUARIO">Usuario</option>
+      </select>
+    </div>
+
+    @if (cargando()) {
+      <p class="estado">Cargando usuarios...</p>
+    } @else if (error(); as mensajeCarga) {
+      <div class="alerta-error" role="alert">{{ mensajeCarga }}</div>
+      <button type="button" class="btn btn-secundario" (click)="cargar()">Reintentar</button>
+    } @else {
+      <div class="contenedor-tabla">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Correo</th>
+              <th scope="col">Rol</th>
+              <th scope="col">Estado</th>
+              <th scope="col" class="acciones-col"><span class="visualmente-oculto">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usuario of filtrados(); track usuario.id) {
+              <tr [class.seleccionada]="editando()?.id === usuario.id">
+                <th scope="row" class="nombre">
+                  {{ usuario.nombre }}
+                  @if (usuario.id === miId()) {
+                    <span class="yo">Tú</span>
+                  }
+                </th>
+                <td>{{ usuario.correo }}</td>
+                <td>
+                  <span class="rol" [class.admin]="usuario.rol === 'ADMIN'">
+                    {{ etiquetaRol(usuario.rol) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="estado-chip" [class.inactivo]="!usuario.activo">
+                    {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="acciones">
+                  <button
+                    type="button"
+                    class="icono"
+                    [disabled]="usuario.id === miId()"
+                    [title]="usuario.id === miId() ? 'No puedes editar tu propia cuenta' : 'Editar'"
+                    [attr.aria-label]="'Editar ' + usuario.nombre"
+                    (click)="abrirEdicion(usuario)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4ZM14 6l4 4" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="icono peligro"
+                    [disabled]="usuario.id === miId()"
+                    [title]="usuario.id === miId() ? 'No puedes eliminar tu propia cuenta' : 'Eliminar'"
+                    [attr.aria-label]="'Eliminar ' + usuario.nombre"
+                    (click)="eliminar(usuario)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13M10 11v6M14 11v6" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="vacio">No hay usuarios con esos filtros.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (panelAbierto()) {
+    <aside class="panel" aria-labelledby="titulo-panel">
+      <header class="panel-cabecera">
+        <h2 id="titulo-panel">{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+        <button type="button" class="cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">×</button>
+      </header>
+
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre</label>
+          <input
+            #campoNombre
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            autocomplete="off"
+            [class.invalido]="mensaje('nombre')"
+          />
+          @if (mensaje('nombre'); as texto) {
+            <span class="error">{{ texto }}</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="correo">Correo</label>
+          <input
+            id="correo"
+            type="email"
+            formControlName="correo"
+            autocomplete="off"
+            [class.invalido]="mensaje('correo')"
+          />
+          @if (mensaje('correo'); as texto) {
+            <span class="error">{{ texto }}</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="rol">Rol</label>
+          <select id="rol" formControlName="rol">
+            <option value="USUARIO">Usuario</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="password">
+            Contraseña
+            @if (editando()) {
+              <span class="opcional">(opcional)</span>
+            }
+          </label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            [placeholder]="editando() ? 'Déjala vacía para no cambiarla' : 'Mínimo 8 caracteres'"
+            [class.invalido]="mensaje('password')"
+          />
+          @if (mensaje('password'); as texto) {
+            <span class="error">{{ texto }}</span>
+          }
+        </div>
+
+        <label class="interruptor" for="activo">
+          <input id="activo" type="checkbox" role="switch" formControlName="activo" />
+          <span class="pista" aria-hidden="true"></span>
+          <span class="texto">
+            Usuario activo
+            <small>Un usuario inactivo no puede iniciar sesión</small>
+          </span>
+        </label>
+
+        <div class="acciones-panel">
+          <button type="button" class="btn btn-secundario" (click)="cerrarPanel()">Cancelar</button>
+          <button type="submit" class="btn btn-primario" [disabled]="formulario.invalid || guardando()">
+            @if (guardando()) {
+              Guardando...
+            } @else {
+              Guardar
+            }
+          </button>
+        </div>
+      </form>
+    </aside>
+  }
+</section>

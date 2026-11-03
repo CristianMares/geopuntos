@@ -33,8 +33,7 @@ export const routes: Routes = [
       {
         path: 'usuarios',
         canActivate: [adminGuard],
-        data: { titulo: 'Usuarios' },
-        loadComponent: () => import('./pages/proximamente/proximamente').then((m) => m.Proximamente),
+        loadComponent: () => import('./pages/usuarios/usuarios').then((m) => m.Usuarios),
       },
       { path: '', pathMatch: 'full', redirectTo: 'mapa' },
     ],
