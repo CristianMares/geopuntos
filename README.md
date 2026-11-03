@@ -102,6 +102,22 @@ npm start
 
 La aplicación queda en `http://localhost:4200`. Más detalle en [frontend](docs/frontend.md).
 
+## Despliegue
+
+| Pieza | Servicio | Carpeta |
+|---|---|---|
+| Base de datos | Neon (PostgreSQL) | `database/` |
+| API | Render | `backend` |
+| Frontend | Vercel | `frontend` |
+
+La base se crea ejecutando `schema.sql` y luego `seed.sql`. La API se compila con `npm install --include=dev && npm run build` y arranca con `npm start`; su estado se comprueba en `/api/salud`.
+
+Variables de la API en Render (los valores van en el panel del servicio, nunca en el repositorio): `NODE_VERSION`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL=true`, `JWT_SECRET`, `JWT_EXPIRES_IN` y `CORS_ORIGIN` (la dirección del frontend, sin barra final).
+
+El frontend no usa variables de entorno: la dirección de la API está en `frontend/src/environments/environment.ts` y se compila con él. `frontend/vercel.json` hace que las rutas como `/mapa` funcionen al recargar.
+
+La API gratuita de Render se duerme tras 15 minutos sin tráfico; la primera petición después tarda cerca de un minuto.
+
 ## Flujo de trabajo
 
 `main` solo recibe el pull request final. El trabajo se integra en `desarrollo` mediante ramas `feature/...`, cada una con su pull request. El detalle está en [decisiones](docs/decisiones.md).
