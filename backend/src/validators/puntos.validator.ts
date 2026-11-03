@@ -39,6 +39,19 @@ export const esquemaPunto = z.object({
 
 export type DatosPunto = z.infer<typeof esquemaPunto>;
 
+export const MAX_FILAS_IMPORTACION = 500;
+
+/** Cuerpo de la importación; cada fila se valida aparte para poder decir cuál falló */
+export const esquemaCargaImportacion = z.object({
+  puntos: z
+    .array(z.unknown(), { error: 'Se esperaba una lista de puntos' })
+    .min(1, 'El archivo no trae puntos')
+    .max(
+      MAX_FILAS_IMPORTACION,
+      `Solo se pueden importar hasta ${MAX_FILAS_IMPORTACION} puntos a la vez`,
+    ),
+});
+
 /** Filtros del listado: ?categoriaId= y ?q= */
 export const esquemaFiltrosPuntos = z.object({
   q: z
