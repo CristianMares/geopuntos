@@ -51,7 +51,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/ol/ol.css", "src/styles.scss"]
+            "styles": [
+              "node_modules/ol/ol.css",
+              "node_modules/ol-ext/control/LayerSwitcher.css",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
