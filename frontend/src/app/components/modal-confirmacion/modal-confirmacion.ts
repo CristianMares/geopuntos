@@ -18,8 +18,13 @@ export class ModalConfirmacion {
     effect(() => {
       const abierta = this.confirmacion.solicitud() !== null;
       const dialogo = this.dialogo().nativeElement;
-      if (abierta && !dialogo.open) dialogo.showModal();
-      else if (!abierta && dialogo.open) dialogo.close();
+      if (abierta && !dialogo.open) {
+        dialogo.showModal();
+        // El contenido se pinta después de abrir: el foco inicial va a "Cancelar", la opción segura
+        setTimeout(() => dialogo.querySelector<HTMLButtonElement>('button[autofocus]')?.focus());
+      } else if (!abierta && dialogo.open) {
+        dialogo.close();
+      }
     });
   }
 
