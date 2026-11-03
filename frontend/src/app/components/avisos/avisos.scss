@@ -16,7 +16,6 @@
   gap: 10px;
   padding: 12px 12px 12px 14px;
   border: 1px solid var(--borde);
-  border-left-width: 4px;
   border-radius: var(--radio);
   background: var(--blanco);
   box-shadow: var(--sombra);
@@ -24,13 +23,13 @@
   animation: entrar 0.2s ease-out;
 
   &.exito {
-    border-left-color: var(--verde);
+    border-color: rgba(23, 132, 90, 0.4);
     .marca {
       background: var(--verde);
     }
   }
   &.error {
-    border-left-color: var(--rojo);
+    border-color: rgba(160, 43, 31, 0.4);
     .marca {
       background: var(--rojo);
     }
